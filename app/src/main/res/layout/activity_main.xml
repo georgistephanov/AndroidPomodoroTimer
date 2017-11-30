@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="com.georgistephanov.android.pomodorotimer.MainActivity">
+
+	<android.support.constraint.Guideline
+		android:id="@+id/vertical_centre"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		app:layout_constraintGuide_percent="0.53" />
+
+	<EditText
+		android:id="@+id/taskName"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginEnd="8dp"
+		android:layout_marginStart="8dp"
+		android:layout_marginTop="32dp"
+		android:ems="10"
+		android:inputType="textPersonName"
+		android:hint="Enter task name"
+		android:fontFamily="sans-serif-light"
+		android:textSize="20sp"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent" />
+
+	<ProgressBar
+		android:id="@+id/pb_timer"
+		style="?android:attr/progressBarStyleHorizontal"
+		android:layout_width="0dp"
+		android:layout_height="0dp"
+		android:layout_marginBottom="8dp"
+		android:layout_marginEnd="8dp"
+		android:layout_marginStart="8dp"
+		android:max="500"
+		android:progress="480"
+		android:progressDrawable="@drawable/circular_progress_bar"
+
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintHorizontal_bias="0.0"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/taskName"
+		app:layout_constraintVertical_bias="0.0" />
+
+	<TextView
+		android:id="@+id/minutes"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="32dp"
+		android:layout_marginEnd="4dp"
+		android:layout_marginStart="8dp"
+		android:fontFamily="sans-serif-light"
+		android:text="25"
+		android:textSize="80sp"
+		android:textColor="@color/timer"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toStartOf="@+id/vertical_centre"
+		app:layout_constraintHorizontal_bias="1.0"
+		app:layout_constraintStart_toStartOf="@+id/pb_timer"
+		app:layout_constraintTop_toTopOf="@+id/pb_timer" />
+
+
+	<TextView
+		android:id="@+id/seconds"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="48dp"
+		android:layout_marginEnd="8dp"
+		android:layout_marginStart="4dp"
+		android:fontFamily="sans-serif-thin"
+		android:text="00"
+		android:textColor="@color/timer"
+		android:textSize="60sp"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintHorizontal_bias="0.0"
+		app:layout_constraintStart_toStartOf="@+id/vertical_centre"
+		app:layout_constraintTop_toTopOf="@+id/pb_timer" />
+
+
+
+</android.support.constraint.ConstraintLayout>
