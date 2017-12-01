@@ -15,10 +15,12 @@
 package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
-import android.os.Handler;
+import android.content.Context;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,13 +28,15 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+//TODO: Make it as a service running on the background as well
+//TODO: Add notifications
+
 public class MainActivity extends AppCompatActivity {
 	// Task length in milliseconds
-	private static final int TASK_LENGTH_MS = 1500000;
+	private static final int TASK_LENGTH_MS = 3000;
 	private int totalSecondsLeft;
 
 	private Timer timer;
-	private Handler handler;
 	private boolean isTimerRunning = false;
 
 	ProgressBar pb_timer;
@@ -44,34 +48,43 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		handler = new Handler();
 		timer = new Timer();
 		totalSecondsLeft = TASK_LENGTH_MS / 1000;
 
 		pb_timer = findViewById(R.id.pb_timer);
 		v_minutes = findViewById(R.id.minutes);
 		v_seconds = findViewById(R.id.seconds);
+
+		updateTime();
 	}
 
 	public void onStartButtonPressed(View view) {
 		if (!isTimerRunning) {
 			ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 500, 0);
 			animation.setDuration(TASK_LENGTH_MS);
-			animation.setInterpolator(new DecelerateInterpolator());
 			animation.start();
 
-			timer.schedule(new PomodoroTimerTask(), 0, 1000);
+			timer.schedule(new PomodoroTimerTask(), 1000, 1000);
 
 			isTimerRunning = true;
 		}
 	}
 
 	private void updateTimerClock() {
+		if (totalSecondsLeft > 0) {
+			updateTime();
+		}
+		else {
+			onTimerEnd();
+		}
+	}
+
+	private void updateTime() {
 		int minutesLeft = totalSecondsLeft / 60;
 		int secondsLeft = totalSecondsLeft % 60;
 
-		v_minutes.setText(minutesLeft + "");
-		v_seconds.setText(secondsLeft + "");
+		v_minutes.setText(minutesLeft < 10 ? "0" + minutesLeft : String.valueOf(minutesLeft));
+		v_seconds.setText(secondsLeft < 10 ? "0" + secondsLeft : String.valueOf(secondsLeft));
 	}
 
 	private class PomodoroTimerTask extends TimerTask {
@@ -82,5 +95,20 @@ public class MainActivity extends AppCompatActivity {
 				updateTimerClock();
 			});
 		}
+	}
+
+	private void onTimerEnd() {
+		isTimerRunning = false;
+		Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		vibrator.vibrate(1000);
+
+		timer.cancel();
+
+		v_minutes.setText("00");
+		v_seconds.setText("00");
+
+		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 500);
+		animation.setDuration(500);
+		animation.start();
 	}
 }
