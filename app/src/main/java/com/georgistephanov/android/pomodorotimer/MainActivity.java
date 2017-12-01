@@ -100,7 +100,8 @@ public class MainActivity extends AppCompatActivity {
 	private void onTimerEnd() {
 		isTimerRunning = false;
 		Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-		vibrator.vibrate(1000);
+		long[] vibrationPattern = {0, 300, 100, 800};
+		vibrator.vibrate(vibrationPattern, -1);
 
 		timer.cancel();
 

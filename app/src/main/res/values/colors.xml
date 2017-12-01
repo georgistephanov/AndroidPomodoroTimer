@@ -5,4 +5,5 @@
 	<color name="colorAccent">#FF4081</color>
 
 	<color name="timer">#757575</color>
+	<color name="rippleButton">#D81B60</color>
 </resources>
