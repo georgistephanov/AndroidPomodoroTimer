@@ -4,6 +4,8 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:focusable="true"
+	android:focusableInTouchMode="true"
 	tools:context="com.georgistephanov.android.pomodorotimer.MainActivity">
 
 	<android.support.constraint.Guideline
@@ -13,22 +15,42 @@
 		android:orientation="vertical"
 		app:layout_constraintGuide_percent="0.53" />
 
-	<EditText
-		android:id="@+id/taskName"
+	<FrameLayout
+		android:id="@+id/fl_taskName"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginEnd="8dp"
 		android:layout_marginStart="8dp"
 		android:layout_marginTop="32dp"
-		android:ems="10"
-		android:fontFamily="sans-serif-light"
-		android:hint="Enter task name"
-		android:inputType="textPersonName"
-		android:paddingLeft="10dp"
-		android:textSize="20sp"
+
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toTopOf="parent" />
+		app:layout_constraintTop_toTopOf="parent"
+		app:layout_constraintBottom_toTopOf="@id/pb_timer">
+
+		<EditText
+			android:id="@+id/taskName"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:ems="10"
+			android:fontFamily="sans-serif-light"
+			android:hint="Enter task name"
+			android:inputType="textPersonName"
+			android:paddingLeft="10dp"
+			android:textSize="20sp" />
+
+		<ImageButton
+			android:id="@+id/deleteTask"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/clear_text_24dp"
+			android:layout_gravity="end|center"
+			android:layout_marginRight="5dp"
+			android:tint="@color/timer"
+			android:background="@android:color/transparent"
+			android:onClick="onDeleteTaskClick"/>
+	</FrameLayout>
+
 
 	<ProgressBar
 		android:id="@+id/pb_timer"
@@ -41,11 +63,11 @@
 		android:progress="500"
 
 		android:progressDrawable="@drawable/circular_progress_bar"
-		app:layout_constraintBottom_toTopOf="@+id/action_button"
+		app:layout_constraintBottom_toTopOf="@+id/start_button"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintHorizontal_bias="0.0"
 		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/taskName" />
+		app:layout_constraintTop_toBottomOf="@+id/fl_taskName" />
 
 	<TextView
 		android:id="@+id/minutes"
@@ -82,21 +104,58 @@
 		app:layout_constraintStart_toStartOf="@+id/vertical_centre"
 		app:layout_constraintTop_toTopOf="@+id/pb_timer" />
 
-	<Button
-		android:id="@+id/action_button"
+	<ImageButton
+		android:id="@+id/start_button"
+		android:layout_width="70dp"
+		android:layout_height="70dp"
+		android:layout_marginBottom="60dp"
+		android:layout_marginEnd="8dp"
+		android:layout_marginStart="8dp"
+		android:src="@drawable/start_button_36dp"
+		android:tint="@color/white"
+		android:background="@drawable/circle_button"
+		android:onClick="onStartButtonClick"
+		android:visibility="visible"
+
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@+id/pb_timer" />
+
+	<ImageButton
+		android:id="@+id/pause_button"
+		android:layout_width="70dp"
+		android:layout_height="70dp"
+		android:layout_marginBottom="60dp"
+		android:layout_marginStart="8dp"
+		android:background="@drawable/circle_button"
+		android:src="@drawable/pause_button_36dp"
+		android:tint="@color/white"
+		android:visibility="invisible"
+		android:onClick="onPauseButtonClick"
+
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="@+id/start_button"
+		app:layout_constraintEnd_toStartOf="@+id/stop_button"/>
+
+	<ImageButton
+		android:id="@+id/stop_button"
 		android:layout_width="70dp"
 		android:layout_height="70dp"
 		android:layout_marginBottom="60dp"
 		android:layout_marginEnd="8dp"
 		android:layout_marginStart="8dp"
 		android:background="@drawable/circle_button"
-		android:onClick="onStartButtonPressed"
+		android:src="@drawable/stop_button_36dp"
+		android:tint="@color/white"
+		android:visibility="invisible"
+		android:onClick="onStopButtonClick"
 
-		android:text="Start"
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintEnd_toEndOf="parent"
-		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@+id/pb_timer" />
+		app:layout_constraintStart_toEndOf="@+id/pause_button"
+		app:layout_constraintTop_toTopOf="@+id/start_button" />
 
 
 </android.support.constraint.ConstraintLayout>
