@@ -44,7 +44,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 	// Task length in milliseconds
-	private static final int TASK_LENGTH_MS = 2000;
+	private static final int TASK_LENGTH_MS = 15000;
 	private static final int BREAK_LENGTH_MS = 10000;
 
 	private int totalSecondsLeft;
@@ -294,7 +294,6 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-
 	/**
 	 * Sets the break colour to all the widgets that it should be applied on.
 	 */
@@ -337,7 +336,6 @@ public class MainActivity extends AppCompatActivity {
 		assert view != null;
 
 		if (view instanceof ProgressBar) {
-			ProgressBar pb = (ProgressBar) view;
 			((ProgressBar) view).getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
 		}
 		else if (view instanceof ImageButton) {
