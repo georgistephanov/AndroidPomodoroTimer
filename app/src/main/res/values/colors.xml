@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="colorPrimary">#FF5722</color>
-	<color name="colorPrimaryDark">#E64A19</color>
+	<color name="colorPrimary">#FF8A65</color>
+	<color name="colorPrimaryDark">#FF5722</color>
 	<color name="colorAccent">#FF8A65</color>
 
+	<color name="breakGreen">#69F0AE</color>
+	<color name="breakGreenRipple">#00E676</color>
 	<color name="white">#FFF</color>
-	<color name="timer">#757575</color>
-	<color name="rippleButton">#F4511E</color>
+	<color name="rippleButton">#E0E0E0</color>
 </resources>

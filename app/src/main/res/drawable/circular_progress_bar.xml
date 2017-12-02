@@ -11,7 +11,7 @@
 		android:innerRadiusRatio="2.3"
 		android:thickness="7sp">
 
-		<solid android:color="@color/colorAccent" />
+		<solid android:color="@color/colorPrimary" />
 	</shape>
 
 </rotate>

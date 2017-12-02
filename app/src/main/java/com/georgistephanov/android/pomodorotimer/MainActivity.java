@@ -16,11 +16,20 @@ package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -35,15 +44,20 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 	// Task length in milliseconds
-	private static final int TASK_LENGTH_MS = 15000;
+	private static final int TASK_LENGTH_MS = 2000;
+	private static final int BREAK_LENGTH_MS = 10000;
+
 	private int totalSecondsLeft;
 
 	private Timer timer;
 	private boolean isTimerRunning = false;
+	private boolean isBreak = false;
+	private boolean hasEnded = false;
 
 	ObjectAnimator pb_animation;
 
 	EditText et_taskName;
+	ImageButton b_deleteEditText;
 
 	ProgressBar pb_timer;
 	TextView v_minutes;
@@ -52,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
 	ImageButton b_start;
 	ImageButton b_pause;
 	ImageButton b_stop;
+	Button b_break;
+	Button b_continue;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 		totalSecondsLeft = TASK_LENGTH_MS / 1000;
 
 		et_taskName = findViewById(R.id.taskName);
+		b_deleteEditText = findViewById(R.id.deleteTask);
 
 		pb_timer = findViewById(R.id.pb_timer);
 		v_minutes = findViewById(R.id.minutes);
@@ -69,8 +86,26 @@ public class MainActivity extends AppCompatActivity {
 		b_start = findViewById(R.id.start_button);
 		b_pause = findViewById(R.id.pause_button);
 		b_stop = findViewById(R.id.stop_button);
+		b_break = findViewById(R.id.takeBreak);
+		b_continue = findViewById(R.id.continueTask);
 
 		updateTime();
+	}
+
+	/**
+	 * This method is called when the `X` of the edit text field for the task
+	 * name has been clicked. It deletes the text of the edit text if such is
+	 * entered.
+	 * @param view the `x` button
+	 */
+	public void onDeleteTaskClick(View view) {
+		if (et_taskName.getText().length() > 0) {
+			et_taskName.setText("");
+
+			if(et_taskName.hasFocus()) {
+				et_taskName.clearFocus();
+			}
+		}
 	}
 
 	/**
@@ -79,26 +114,7 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	public void onStartButtonClick(View view) {
 		if (!isTimerRunning) {
-			// Start the timer
-			startTimer();
-			showButtons();
-
-			// Hide the start button
-			b_start.setVisibility(View.INVISIBLE);
-
-			// Show the pause and stop buttons
-			b_pause.setVisibility(View.VISIBLE);
-			b_stop.setVisibility(View.VISIBLE);
-
-			// Start the progress bar pb_animation
-			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", 500, 0);
-			pb_animation.setDuration(TASK_LENGTH_MS);
-			pb_animation.start();
-
-			// If the edit text is active make it inactive to avoid distraction of the blinking cursor
-			if( et_taskName.hasFocus() ) {
-				et_taskName.clearFocus();
-			}
+			startTask();
 		}
 	}
 
@@ -124,21 +140,63 @@ public class MainActivity extends AppCompatActivity {
 	 * @param view the task end button
 	 */
 	public void onStopButtonClick(View view) {
+		hasEnded = false;
 		pb_animation.end();
 		onTimerEnd(false);
 	}
 
-	/**
-	 * This method is called when the `X` of the edit text field for the task
-	 * name has been clicked. It deletes the text of the edit text if such is
-	 * entered.
-	 * @param view the `x` button
-	 */
-	public void onDeleteTaskClick(View view) {
-		if (et_taskName.getText().length() > 0) {
-			et_taskName.setText("");
+	public void onBreakButtonClick(View view) {
+		isBreak = true;
+		setBreakColors();
+		startTask(BREAK_LENGTH_MS);
+	}
 
-			if(et_taskName.hasFocus()) {
+	/**
+	 * This method is being called when the `Continue` button has been pressed
+	 * after the current task has finished. It calls the onStartButtonClick() method
+	 * to start a new pomodoro timer.
+	 * @param view the continue button
+	 */
+	public void onContinueButtonClick(View view) {
+		onStartButtonClick(b_start);
+	}
+
+
+
+	/**
+	 * Default start task method which overloads and calls the main startTask
+	 * method with the default settings.
+	 */
+	private void startTask() {
+		startTask(TASK_LENGTH_MS);
+	}
+
+	/**
+	 * This method is responsible for starting the timer and setting the correct
+	 * colours depending on whether it is a task or a break currently running. It
+	 * then sets an appropriate animation for the progress bar.
+	 *
+	 * @param duration of the timer in milliseconds
+	 * @param color the color in which the progressbar and the two buttons are going to be
+	 */
+	private void startTask(int duration) {
+		if (!isTimerRunning) {
+			// Set the correct amount of seconds left
+			totalSecondsLeft = duration / 1000;
+			updateTime();
+
+			// Start the timer
+			startTimer();
+			showButtons();
+
+			// Start the progress bar pb_animation
+			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", 500, 0);
+			pb_animation.setDuration(duration);
+			pb_animation.setInterpolator(new LinearInterpolator());
+			pb_animation.start();
+
+			// If the edit text is active make it inactive to avoid distraction of the blinking cursor
+			if( et_taskName.hasFocus() ) {
 				et_taskName.clearFocus();
 			}
 		}
@@ -153,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
 			updateTime();
 		}
 		else {
+			hasEnded = true;
 			onTimerEnd(true);
 		}
 	}
@@ -189,11 +248,20 @@ public class MainActivity extends AppCompatActivity {
 		animation.setDuration(500);
 		animation.start();
 
+		// Restores the colours if it has been a break
+		if ( isBreak ) {
+			isBreak = false;
+			restoreColors();
+		}
+
 		if (notification) {
 			playTimerEndNotification();
 		}
 	}
 
+	/**
+	 * Plays the melody and vibration pattern.
+	 */
 	private void playTimerEndNotification() {
 		MediaPlayer mp = MediaPlayer.create(this, R.raw.end_sound);
 		mp.start();
@@ -226,6 +294,57 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
+
+	/**
+	 * Sets the break colour to all the widgets that it should be applied on.
+	 */
+	private void setBreakColors() {
+		int color = getResources().getColor(R.color.breakGreen, this.getTheme());
+		setColors(color);
+	}
+
+	/**
+	 * Restores the default colours of the widgets if they have been changed.
+	 */
+	private void restoreColors() {
+		int color = getResources().getColor(R.color.colorPrimary, this.getTheme());
+		setColors(color);
+	}
+
+	/**
+	 * Sets the colours of the status bar, the delete button for the edit text widget,
+	 * the progress bar and the two buttons (pause, stop) to a specific color.
+	 *
+	 * @param color in which to paint the widgets
+	 */
+	private void setColors(int color) {
+		getWindow().setStatusBarColor(color);
+		setShapeColor(b_deleteEditText, color);
+		setShapeColor(pb_timer, color);
+		setShapeColor(b_pause, color);
+		setShapeColor(b_stop, color);
+
+		// Change the tint colour of the delete button
+		b_deleteEditText.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+	}
+
+	/**
+	 * Changes the colour of a shape background
+	 * @param view the view which colour to be changed
+	 * @param color the colour to be set
+	 */
+	private void setShapeColor(View view, int color) {
+		assert view != null;
+
+		if (view instanceof ProgressBar) {
+			ProgressBar pb = (ProgressBar) view;
+			((ProgressBar) view).getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+		}
+		else if (view instanceof ImageButton) {
+			((ImageButton) view).getBackground().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+		}
+	}
+
 	/**
 	 * Shows the start button and hides the pause and stop buttons if no task
 	 * is currently running. Shows the pause and stop buttons and hides the start
@@ -236,17 +355,30 @@ public class MainActivity extends AppCompatActivity {
 			// Hide the start button
 			b_start.setVisibility(View.INVISIBLE);
 
+			// Hide the break and continue buttons if visible
+			if ( b_break.getVisibility() != View.INVISIBLE ) {
+				b_break.setVisibility(View.INVISIBLE);
+				b_continue.setVisibility(View.INVISIBLE);
+			}
+
 			// Show the pause and break buttons
 			b_pause.setVisibility(View.VISIBLE);
 			b_stop.setVisibility(View.VISIBLE);
 		}
 		else {
-			// Show the start button
-			b_start.setVisibility(View.VISIBLE);
-
 			// Hide the pause and break buttons
 			b_pause.setVisibility(View.INVISIBLE);
 			b_stop.setVisibility(View.INVISIBLE);
+
+			if ( hasEnded ) {
+				// Show the `Break` and `Continue` buttons
+				b_break.setVisibility(View.VISIBLE);
+				b_continue.setVisibility(View.VISIBLE);
+			}
+			else {
+				// Show the start button
+				b_start.setVisibility(View.VISIBLE);
+			}
 		}
 	}
 

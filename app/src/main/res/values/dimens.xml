@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="et_textSize">20sp</dimen>
+	<dimen name="et_paddingLeft">10dp</dimen>
+	<dimen name="minutes_textSize">80sp</dimen>
+	<dimen name="seconds_textSize">60sp</dimen>
+	<dimen name="roundButton_size">70dp</dimen>
+	<dimen name="rectButton_width">130dp</dimen>
+	<dimen name="rectButton_height">50dp</dimen>
+	<dimen name="rectButton_radius">5dp</dimen>
+	<dimen name="rectButton_textSize">17sp</dimen>
+	<dimen name="button_marginBottom">60dp</dimen>
+</resources>

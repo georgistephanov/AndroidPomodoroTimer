@@ -13,7 +13,7 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
-		app:layout_constraintGuide_percent="0.53" />
+		app:layout_constraintGuide_percent="0.5" />
 
 	<FrameLayout
 		android:id="@+id/fl_taskName"
@@ -36,8 +36,8 @@
 			android:fontFamily="sans-serif-light"
 			android:hint="Enter task name"
 			android:inputType="textPersonName"
-			android:paddingLeft="10dp"
-			android:textSize="20sp" />
+			android:paddingLeft="@dimen/et_paddingLeft"
+			android:textSize="@dimen/et_textSize" />
 
 		<ImageButton
 			android:id="@+id/deleteTask"
@@ -46,7 +46,7 @@
 			android:src="@drawable/clear_text_24dp"
 			android:layout_gravity="end|center"
 			android:layout_marginRight="5dp"
-			android:tint="@color/colorAccent"
+			android:tint="@color/colorPrimary"
 			android:background="@android:color/transparent"
 			android:onClick="onDeleteTaskClick"/>
 	</FrameLayout>
@@ -61,8 +61,8 @@
 		android:layout_marginStart="8dp"
 		android:max="500"
 		android:progress="500"
-
 		android:progressDrawable="@drawable/circular_progress_bar"
+
 		app:layout_constraintBottom_toTopOf="@+id/start_button"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintHorizontal_bias="0.0"
@@ -71,15 +71,12 @@
 
 	<TextView
 		android:id="@+id/minutes"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
+		style="@style/timer"
 		android:layout_marginBottom="8dp"
-		android:layout_marginEnd="4dp"
-		android:layout_marginStart="8dp"
 		android:fontFamily="sans-serif-light"
 		android:text="25"
-		android:textColor="@color/timer"
-		android:textSize="80sp"
+
+		android:textSize="@dimen/minutes_textSize"
 		app:layout_constraintBottom_toBottomOf="@+id/pb_timer"
 		app:layout_constraintEnd_toStartOf="@+id/vertical_centre"
 		app:layout_constraintHorizontal_bias="1.0"
@@ -89,15 +86,14 @@
 
 	<TextView
 		android:id="@+id/seconds"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
+		style="@style/timer"
 		android:layout_marginBottom="8dp"
 		android:layout_marginEnd="8dp"
-		android:layout_marginStart="4dp"
+		android:layout_marginStart="8dp"
 		android:fontFamily="sans-serif-thin"
 		android:text="00"
-		android:textColor="@color/timer"
-		android:textSize="60sp"
+		android:textSize="@dimen/seconds_textSize"
+
 		app:layout_constraintBottom_toBottomOf="@+id/pb_timer"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintHorizontal_bias="0.0"
@@ -106,14 +102,10 @@
 
 	<ImageButton
 		android:id="@+id/start_button"
-		android:layout_width="70dp"
-		android:layout_height="70dp"
-		android:layout_marginBottom="60dp"
+		style="@style/buttons"
 		android:layout_marginEnd="8dp"
 		android:layout_marginStart="8dp"
 		android:src="@drawable/start_button_36dp"
-		android:tint="@color/white"
-		android:background="@drawable/circle_button"
 		android:onClick="onStartButtonClick"
 		android:visibility="visible"
 
@@ -124,13 +116,9 @@
 
 	<ImageButton
 		android:id="@+id/pause_button"
-		android:layout_width="70dp"
-		android:layout_height="70dp"
-		android:layout_marginBottom="60dp"
+		style="@style/buttons"
 		android:layout_marginStart="8dp"
-		android:background="@drawable/circle_button"
 		android:src="@drawable/pause_button_36dp"
-		android:tint="@color/white"
 		android:visibility="invisible"
 		android:onClick="onPauseButtonClick"
 
@@ -141,14 +129,10 @@
 
 	<ImageButton
 		android:id="@+id/stop_button"
-		android:layout_width="70dp"
-		android:layout_height="70dp"
-		android:layout_marginBottom="60dp"
+		style="@style/buttons"
 		android:layout_marginEnd="8dp"
 		android:layout_marginStart="8dp"
-		android:background="@drawable/circle_button"
 		android:src="@drawable/stop_button_36dp"
-		android:tint="@color/white"
 		android:visibility="invisible"
 		android:onClick="onStopButtonClick"
 
@@ -156,6 +140,46 @@
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toEndOf="@+id/pause_button"
 		app:layout_constraintTop_toTopOf="@+id/start_button" />
+
+	<Button
+		android:id="@+id/takeBreak"
+		android:layout_width="wrap_content"
+		android:layout_height="54dp"
+		android:layout_marginBottom="@dimen/button_marginBottom"
+		android:layout_marginEnd="8dp"
+		android:layout_marginStart="8dp"
+		android:background="@drawable/rect_button"
+		android:text="Take a break"
+		android:textAllCaps="false"
+		android:textColor="@color/white"
+		android:textSize="@dimen/rectButton_textSize"
+		android:visibility="invisible"
+		android:onClick="onBreakButtonClick"
+
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toStartOf="@+id/vertical_centre"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/pb_timer" />
+
+	<Button
+		android:id="@+id/continueTask"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="@dimen/button_marginBottom"
+		android:layout_marginEnd="8dp"
+		android:layout_marginStart="8dp"
+		android:background="@drawable/rect_button"
+		android:text="Continue"
+		android:textAllCaps="false"
+		android:textColor="@color/white"
+		android:textSize="@dimen/rectButton_textSize"
+		android:visibility="invisible"
+		android:onClick="onContinueButtonClick"
+
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="@+id/vertical_centre"
+		app:layout_constraintTop_toBottomOf="@id/pb_timer"/>
 
 
 </android.support.constraint.ConstraintLayout>
