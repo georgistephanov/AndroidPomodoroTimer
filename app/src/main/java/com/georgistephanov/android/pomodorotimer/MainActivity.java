@@ -15,7 +15,10 @@
 package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -24,6 +27,7 @@ import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -38,16 +42,16 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
-//TODO: Implement breaks
-//TODO: Make it as a service running on the background as well
 //TODO: Add notifications
 
 public class MainActivity extends AppCompatActivity {
 	// Task length in milliseconds
-	private static final int TASK_LENGTH_MS = 15000;
+	private static final int TASK_LENGTH_MS = 5000;
 	private static final int BREAK_LENGTH_MS = 10000;
-
 	private int totalSecondsLeft;
+
+	// Main notification channel id
+	private static final String MAIN_NOTIFICATION_CHANNEL = "PomodoroActivity";
 
 	private Timer timer;
 	private boolean isTimerRunning = false;
@@ -110,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
 	/**
 	 * This method is called when the play button has been pressed.
-	 * @param view the play button
+	 * @param view the button that has been pressed
 	 */
 	public void onStartButtonClick(View view) {
 		if (!isTimerRunning) {
@@ -177,7 +181,6 @@ public class MainActivity extends AppCompatActivity {
 	 * then sets an appropriate animation for the progress bar.
 	 *
 	 * @param duration of the timer in milliseconds
-	 * @param color the color in which the progressbar and the two buttons are going to be
 	 */
 	private void startTask(int duration) {
 		if (!isTimerRunning) {
@@ -254,8 +257,10 @@ public class MainActivity extends AppCompatActivity {
 			restoreColors();
 		}
 
+		// If true -> the timer has ended uninterrupted
 		if (notification) {
 			playTimerEndNotification();
+			showStatusBarNotification();
 		}
 	}
 
@@ -270,6 +275,28 @@ public class MainActivity extends AppCompatActivity {
 		Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		long[] vibrationPattern = {0, 300, 100, 800};
 		vibrator.vibrate(vibrationPattern, -1);
+	}
+
+	private void showStatusBarNotification() {
+		// Builds the notification
+		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, MAIN_NOTIFICATION_CHANNEL);
+		notificationBuilder
+				.setAutoCancel(true)
+				.setSmallIcon(R.mipmap.ic_launcher_round)
+				.setContentTitle(getResources().getString(R.string.notification_title))
+				.setContentText(getResources().getString(R.string.notification_text))
+				.setTicker(getResources().getString(R.string.notification_title));
+
+		// Creates an intent to this class
+		Intent notificationIntent = new Intent(this, MainActivity.class);
+		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+		// Bounds the intent which to execute when the notification is clicked to the notification
+		PendingIntent intent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		notificationBuilder.setContentIntent(intent);
+
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(0, notificationBuilder.build());
 	}
 
 	/**
