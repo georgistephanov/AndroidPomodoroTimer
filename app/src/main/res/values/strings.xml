@@ -3,6 +3,8 @@
 	<string name="b_break">Take a break</string>
 	<string name="b_continue">Continue</string>
 	<string name="et_placeholder">Enter task name</string>
-	<string name="notification_title">Pomodoro task finished</string>
-	<string name="notification_text">You have finished your current task.</string>
+	<string name="notification_task_title">Pomodoro task finished</string>
+	<string name="notification_task_text">You have finished your current task.</string>
+	<string name="notification_break_title">Time is up...</string>
+	<string name="notification_break_text">Your break has finished. It\'s time for another task.</string>
 </resources>

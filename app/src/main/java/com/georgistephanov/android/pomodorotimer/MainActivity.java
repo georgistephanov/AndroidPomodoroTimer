@@ -251,16 +251,16 @@ public class MainActivity extends AppCompatActivity {
 		animation.setDuration(500);
 		animation.start();
 
+		// If true -> the timer has ended uninterrupted
+		if (notification) {
+			playTimerEndNotification();
+			showStatusBarNotification(isBreak);
+		}
+
 		// Restores the colours if it has been a break
 		if ( isBreak ) {
 			isBreak = false;
 			restoreColors();
-		}
-
-		// If true -> the timer has ended uninterrupted
-		if (notification) {
-			playTimerEndNotification();
-			showStatusBarNotification();
 		}
 	}
 
@@ -277,15 +277,27 @@ public class MainActivity extends AppCompatActivity {
 		vibrator.vibrate(vibrationPattern, -1);
 	}
 
-	private void showStatusBarNotification() {
+	/**
+	 * Creates and displays a notification in the status bar with the default notification
+	 * title and text. Creates and bounds an intent to the notification so that when it is
+	 * clicked the app will be put on top.
+	 */
+	private void showStatusBarNotification(boolean wasBreak) {
 		// Builds the notification
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, MAIN_NOTIFICATION_CHANNEL);
 		notificationBuilder
 				.setAutoCancel(true)
-				.setSmallIcon(R.mipmap.ic_launcher_round)
-				.setContentTitle(getResources().getString(R.string.notification_title))
-				.setContentText(getResources().getString(R.string.notification_text))
-				.setTicker(getResources().getString(R.string.notification_title));
+				.setSmallIcon(R.mipmap.ic_launcher_round);
+
+		if ( wasBreak ) {
+			notificationBuilder
+					.setContentTitle(getResources().getString(R.string.notification_break_title))
+					.setContentText(getResources().getString(R.string.notification_break_text));
+		} else {
+			notificationBuilder
+				.setContentTitle(getResources().getString(R.string.notification_task_title))
+				.setContentText(getResources().getString(R.string.notification_task_text));
+		}
 
 		// Creates an intent to this class
 		Intent notificationIntent = new Intent(this, MainActivity.class);
