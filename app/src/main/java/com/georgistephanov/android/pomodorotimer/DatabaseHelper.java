@@ -13,14 +13,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "pomodoro";
 	private static final int SCHEMA = 1;
 
-	static final String TASK_TABLE = "task";
-	static final String TASK_NAME = "name";
-	static final String TASK_LENGTH = "length";
-	static final String TASK_COMPLETED = "completed";
+	// The task table name and its columns
+	private static final String TASK_TABLE = "task";
+	private static final String TASK_NAME = "name";
+	private static final String TASK_LENGTH = "length";
+	private static final String TASK_COMPLETED = "completed";
 
-	static final String SETTINGS_TABLE = "settings";
-	static final String SETTINGS_TASK_LEGTH = "task_length";
-	static final String SETTINGS_BREAK_LENGTH = "break_length";
+	// The settings table name and its columns
+	private static final String SETTINGS_TABLE = "settings";
+	private static final String SETTINGS_TASK_LEGTH = "task_length";
+	private static final String SETTINGS_BREAK_LENGTH = "break_length";
 
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, SCHEMA);
@@ -33,8 +35,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		ContentValues contentValues = new ContentValues();
 
-		contentValues.put(SETTINGS_TASK_LEGTH, 15000);
-		contentValues.put(SETTINGS_BREAK_LENGTH, 3000);
+		contentValues.put(SETTINGS_TASK_LEGTH, 25000);
+		contentValues.put(SETTINGS_BREAK_LENGTH, 5000);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
 	}
 
@@ -44,8 +46,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.delete(SETTINGS_TABLE, "? > 0", new String[] {"SETTINGS_TASK_LENGTH"});
 
 		ContentValues contentValues = new ContentValues();
-		contentValues.put(SETTINGS_TASK_LEGTH, 15000);
-		contentValues.put(SETTINGS_BREAK_LENGTH, 3000);
+		contentValues.put(SETTINGS_TASK_LEGTH, 12000);
+		contentValues.put(SETTINGS_BREAK_LENGTH, 4000);
 
 		db.insert(SETTINGS_TABLE, null, contentValues);
 
@@ -61,6 +63,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public String getTaskTable() {
 		return TASK_TABLE;
 	}
+	public String getTaskName() {
+		return TASK_NAME;
+	}
+	public String getTaskLength() {
+		return TASK_LENGTH;
+	}
+	public String getTaskCompleted() {
+		return TASK_COMPLETED;
+	}
+
 	public String getSettingsTable() {
 		return SETTINGS_TABLE;
 	}

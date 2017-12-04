@@ -28,6 +28,7 @@ import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
@@ -41,7 +42,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 	// Database helper instance
-	DatabaseHelper database = Database.getInstance(this);
+	DatabaseHelper database;
 
 	// The length of the task and the break in milliseconds
 	private int taskLength;
@@ -91,8 +92,11 @@ public class MainActivity extends AppCompatActivity {
 		b_break = findViewById(R.id.takeBreak);
 		b_continue = findViewById(R.id.continueTask);
 
+		// Get the database helper instance
+		database = Database.getInstance(this);
+
 		// Read the settings from the database
-		Cursor cursor = new GetSettings().doInBackground();
+		Cursor cursor = Database.getSettings();
 		if (cursor.moveToNext()) {
 			taskLength = cursor.getInt(0);
 			breakLength = cursor.getInt(1);
@@ -138,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 	/**
 	 * This method is called when the pause button has been clicked during a
 	 * task. It toggles between paused and running state of the timer.
-	 * @param view
+	 * @param view the pause button
 	 */
 	public void onPauseButtonClick(View view) {
 		if ( isTimerRunning ) {
@@ -162,6 +166,13 @@ public class MainActivity extends AppCompatActivity {
 		onTimerEnd(false);
 	}
 
+	/**
+	 * This method is called when the `Take a break` button has been pressed. It
+	 * sets the correct break colours for all widgets on the screen and starts a new
+	 * task with the length of the break.
+	 *
+	 * @param view the take-a-break button
+	 */
 	public void onBreakButtonClick(View view) {
 		isBreak = true;
 		setBreakColors();
@@ -177,8 +188,6 @@ public class MainActivity extends AppCompatActivity {
 	public void onContinueButtonClick(View view) {
 		onStartButtonClick(b_start);
 	}
-
-
 
 	/**
 	 * Default start task method which overloads and calls the main startTask
@@ -255,11 +264,29 @@ public class MainActivity extends AppCompatActivity {
 		stopTimer();
 		showButtons();
 
-		// Update the clock to the initial length of the task
+		// Write the task session to the database
+		if ( !isBreak ) {
+			int taskSecondsCompleted = (taskLength / 1000) - totalSecondsLeft;
+			String taskName = et_taskName.getText().toString().length() != 0
+					? et_taskName.getText().toString()
+					: getResources().getString(R.string.task_default_name);
+			byte taskCompleted = totalSecondsLeft == 0
+					? (byte) 1
+					: (byte) 0;
+
+			ContentValues contentValues = new ContentValues();
+			contentValues.put(database.getTaskName(), taskName);
+			contentValues.put(database.getTaskLength(), taskSecondsCompleted);
+			contentValues.put(database.getTaskCompleted(), taskCompleted);
+
+			Database.insert(contentValues);
+		}
+
+		// Reset the clock to the initial length of the task
 		totalSecondsLeft = taskLength / 1000;
 		updateTime();
 
-		// Animate the progressbar backwards to the beginning
+		// Animate the progressbar backwards to its beginning state
 		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 500);
 		animation.setDuration(500);
 		animation.start();
@@ -443,34 +470,6 @@ public class MainActivity extends AppCompatActivity {
 				totalSecondsLeft--;
 				updateTimerClock();
 			});
-		}
-	}
-
-	/**
-	 * Class that extends AsyncTask to get the settings from the database on a background
-	 * thread and return them to the main activity. It is used on activity creation and
-	 * the doInBackground method returns a cursor with the two values for the task and break
-	 * lengths respectively.
-	 */
-	private class GetSettings extends AsyncTask<Void, Void, Cursor> {
-		@Override
-		protected Cursor doInBackground(Void... voids) {
-			return database
-					.getReadableDatabase()
-					.rawQuery("SELECT * FROM settings", null);
-		}
-	}
-
-	private class InsertTask extends AsyncTask<ContentValues, Void, Void> {
-		@Override
-		protected Void doInBackground(ContentValues... contentValues) {
-			assert contentValues.length > 0;
-
-			database
-					.getWritableDatabase()
-					.insert(database.getSettingsTable(), null, contentValues[0]);
-
-			return null;
 		}
 	}
 }
