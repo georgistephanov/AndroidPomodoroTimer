@@ -17,18 +17,15 @@ package com.georgistephanov.android.pomodorotimer;
 import android.animation.ObjectAnimator;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
+import android.database.Cursor;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -42,12 +39,15 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
-//TODO: Add notifications
-
 public class MainActivity extends AppCompatActivity {
-	// Task length in milliseconds
-	private static final int TASK_LENGTH_MS = 5000;
-	private static final int BREAK_LENGTH_MS = 10000;
+	// Database helper instance
+	DatabaseHelper database = Database.getInstance(this);
+
+	// The length of the task and the break in milliseconds
+	private int taskLength;
+	private int breakLength;
+
+	// The state of the current timer in seconds
 	private int totalSecondsLeft;
 
 	// Main notification channel id
@@ -78,8 +78,6 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		totalSecondsLeft = TASK_LENGTH_MS / 1000;
-
 		et_taskName = findViewById(R.id.taskName);
 		b_deleteEditText = findViewById(R.id.deleteTask);
 
@@ -93,7 +91,22 @@ public class MainActivity extends AppCompatActivity {
 		b_break = findViewById(R.id.takeBreak);
 		b_continue = findViewById(R.id.continueTask);
 
+		// Read the settings from the database
+		Cursor cursor = new GetSettings().doInBackground();
+		if (cursor.moveToNext()) {
+			taskLength = cursor.getInt(0);
+			breakLength = cursor.getInt(1);
+		}
+
+		totalSecondsLeft = taskLength / 1000;
+
 		updateTime();
+	}
+
+	@Override
+	protected void onDestroy() {
+		database.close();
+		super.onDestroy();
 	}
 
 	/**
@@ -152,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
 	public void onBreakButtonClick(View view) {
 		isBreak = true;
 		setBreakColors();
-		startTask(BREAK_LENGTH_MS);
+		startTask(breakLength);
 	}
 
 	/**
@@ -172,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
 	 * method with the default settings.
 	 */
 	private void startTask() {
-		startTask(TASK_LENGTH_MS);
+		startTask(taskLength);
 	}
 
 	/**
@@ -243,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
 		showButtons();
 
 		// Update the clock to the initial length of the task
-		totalSecondsLeft = TASK_LENGTH_MS / 1000;
+		totalSecondsLeft = taskLength / 1000;
 		updateTime();
 
 		// Animate the progressbar backwards to the beginning
@@ -430,6 +443,34 @@ public class MainActivity extends AppCompatActivity {
 				totalSecondsLeft--;
 				updateTimerClock();
 			});
+		}
+	}
+
+	/**
+	 * Class that extends AsyncTask to get the settings from the database on a background
+	 * thread and return them to the main activity. It is used on activity creation and
+	 * the doInBackground method returns a cursor with the two values for the task and break
+	 * lengths respectively.
+	 */
+	private class GetSettings extends AsyncTask<Void, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(Void... voids) {
+			return database
+					.getReadableDatabase()
+					.rawQuery("SELECT * FROM settings", null);
+		}
+	}
+
+	private class InsertTask extends AsyncTask<ContentValues, Void, Void> {
+		@Override
+		protected Void doInBackground(ContentValues... contentValues) {
+			assert contentValues.length > 0;
+
+			database
+					.getWritableDatabase()
+					.insert(database.getSettingsTable(), null, contentValues[0]);
+
+			return null;
 		}
 	}
 }
