@@ -1,22 +1,16 @@
 <resources>
 
 	<!-- No status bar application theme. -->
-	<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+	<style name="AppTheme" parent="android:Theme.Material.Light">
 		<!-- Customize your theme here. -->
-		<item name="colorPrimary">@color/colorPrimary</item>
-		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-		<item name="colorAccent">@color/colorAccent</item>
-		<item name="android:textColorPrimary">@color/gray</item>
-		<item name="android:statusBarColor">@color/colorPrimary</item>
+		<item name="android:colorPrimary">@color/colorPrimary</item>
+		<item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="android:colorAccent">@color/colorAccent</item>
+		<item name="android:textColorPrimary">@color/white</item>
 	</style>
 
-	<!-- Action bar application theme. -->
-	<style name="ActionBarAppTheme" parent="Theme.AppCompat.Light">
-		<!-- Customize your theme here. -->
-		<item name="colorPrimary">@color/ActionBarColorPrimary</item>
-		<item name="colorPrimaryDark">@color/ActionBarColorPrimaryDark</item>
-		<item name="colorAccent">@color/ActionBarColorAccent</item>
-		<item name="android:textColorPrimary">@color/white</item>
+	<style name="PopupMenu" parent="android:Widget.Material.PopupMenu.Overflow">
+		<item name="android:textColor">@color/gray</item>
 	</style>
 
 	<style name="timer">

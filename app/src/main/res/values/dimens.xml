@@ -12,4 +12,5 @@
 	<dimen name="button_marginBottom">60dp</dimen>
 
 	<dimen name="separator_textSize">15sp</dimen>
+	<dimen name="setting_name_textSize">17sp</dimen>
 </resources>

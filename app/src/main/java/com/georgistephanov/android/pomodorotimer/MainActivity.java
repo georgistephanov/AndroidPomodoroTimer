@@ -15,6 +15,7 @@
 package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -28,6 +29,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -41,7 +43,7 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
+public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
 	// Database helper instance
 	DatabaseHelper database;
 
@@ -79,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		getActionBar().hide();
 
 		et_taskName = findViewById(R.id.taskName);
 		b_deleteEditText = findViewById(R.id.deleteTask);
@@ -195,7 +199,8 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 	 * @param view whe popup menu image button
 	 */
 	public void showPopup(View view) {
-		PopupMenu popupMenu = new PopupMenu(this, view);
+		Context popupContext = new ContextThemeWrapper(this, R.style.PopupMenu);
+		PopupMenu popupMenu = new PopupMenu(popupContext, view);
 
 		popupMenu.setOnMenuItemClickListener(this);
 		popupMenu.inflate(R.menu.actions);

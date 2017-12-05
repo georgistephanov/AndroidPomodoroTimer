@@ -41,6 +41,10 @@ public class Database {
 		new InsertTask().doInBackground(cv);
 	}
 
+	public static void updateSettings(ContentValues cv) {
+		new UpdateSettings().doInBackground(cv);
+	}
+
 	/**
 	 * Gets and returns the settings from the settings table of the database.
 	 * @return Cursor containing the result set of the query
@@ -69,6 +73,25 @@ public class Database {
 		}
 	}
 
+	private final static class GetTasks extends AsyncTask<Void, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(Void... voids) {
+			return databaseHelper
+					.getReadableDatabase()
+					.rawQuery("SELECT * FROM task", null);
+		}
+	}
+
+	private final static class UpdateSettings extends AsyncTask<ContentValues, Void, Void> {
+		@Override
+		protected Void doInBackground(ContentValues... contentValues) {
+			databaseHelper.getWritableDatabase()
+					.insert(databaseHelper.getSettingsTable(), null, contentValues[0]);
+
+			return null;
+		}
+	}
+
 	private final static class InsertTask extends AsyncTask<ContentValues, Void, Void> {
 		@Override
 		protected Void doInBackground(ContentValues... contentValues) {
@@ -76,15 +99,6 @@ public class Database {
 					.insert(databaseHelper.getTaskTable(), null, contentValues[0]);
 
 			return null;
-		}
-	}
-
-	private final static class GetTasks extends AsyncTask<Void, Void, Cursor> {
-		@Override
-		protected Cursor doInBackground(Void... voids) {
-			return databaseHelper
-					.getReadableDatabase()
-					.rawQuery("SELECT * FROM task", null);
 		}
 	}
 }
