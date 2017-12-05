@@ -5,6 +5,8 @@
 	<color name="colorAccent">#FF8A65</color>
 
 	<color name="white">#FFF</color>
+	<color name="gray">#757575</color>
 	<color name="rippleButton">#E0E0E0</color>
+	<color name="ripplePopupMenu">#E0E0E0</color>
 	<color name="breakGreen">#69F0AE</color>
 </resources>

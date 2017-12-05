@@ -15,6 +15,23 @@
 		android:orientation="vertical"
 		app:layout_constraintGuide_percent="0.5" />
 
+	<ImageButton
+		android:id="@+id/popup_menu"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginEnd="8dp"
+		android:background="@drawable/popup_menu_button"
+		android:src="@drawable/popup_menu_36dp"
+		android:tint="@color/gray"
+		android:onClick="showPopup"
+
+		app:layout_constraintBottom_toTopOf="@+id/pb_timer"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintHorizontal_bias="1.0"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		app:layout_constraintVertical_bias="0.53" />
+
 	<FrameLayout
 		android:id="@+id/fl_taskName"
 		android:layout_width="wrap_content"

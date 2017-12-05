@@ -23,24 +23,25 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
 	// Database helper instance
 	DatabaseHelper database;
 
@@ -187,6 +188,31 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	public void onContinueButtonClick(View view) {
 		onStartButtonClick(b_start);
+	}
+
+	/**
+	 * Inflates and shows the popup menu.
+	 * @param view whe popup menu image button
+	 */
+	public void showPopup(View view) {
+		PopupMenu popupMenu = new PopupMenu(this, view);
+
+		popupMenu.setOnMenuItemClickListener(this);
+		popupMenu.inflate(R.menu.actions);
+		popupMenu.show();
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem menuItem) {
+		switch(menuItem.getItemId()) {
+			case R.id.menu_statistics:
+				return false;
+			case R.id.menu_settings:
+				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	/**
@@ -341,6 +367,7 @@ public class MainActivity extends AppCompatActivity {
 
 		// Creates an intent to this class
 		Intent notificationIntent = new Intent(this, MainActivity.class);
+		// Stacks the activity as the only activity open of the app even if it was open from another activity
 		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		// Bounds the intent which to execute when the notification is clicked to the notification

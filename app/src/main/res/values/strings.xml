@@ -11,4 +11,8 @@
 	<string name="notification_task_text">You have finished your current task.</string>
 	<string name="notification_break_title">Time is up...</string>
 	<string name="notification_break_text">Your break has finished. It\'s time for another task.</string>
+	<string name="title_activity_settings">Settings</string>
+
+	<string name="menu_previous_tasks">History</string>
+	<string name="menu_settings">Settings</string>
 </resources>
