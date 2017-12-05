@@ -1,6 +1,6 @@
 <resources>
 
-	<!-- Base application theme. -->
+	<!-- No status bar application theme. -->
 	<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
 		<!-- Customize your theme here. -->
 		<item name="colorPrimary">@color/colorPrimary</item>
@@ -8,6 +8,15 @@
 		<item name="colorAccent">@color/colorAccent</item>
 		<item name="android:textColorPrimary">@color/gray</item>
 		<item name="android:statusBarColor">@color/colorPrimary</item>
+	</style>
+
+	<!-- Action bar application theme. -->
+	<style name="ActionBarAppTheme" parent="Theme.AppCompat.Light">
+		<!-- Customize your theme here. -->
+		<item name="colorPrimary">@color/ActionBarColorPrimary</item>
+		<item name="colorPrimaryDark">@color/ActionBarColorPrimaryDark</item>
+		<item name="colorAccent">@color/ActionBarColorAccent</item>
+		<item name="android:textColorPrimary">@color/white</item>
 	</style>
 
 	<style name="timer">
