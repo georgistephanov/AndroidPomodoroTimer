@@ -1,7 +1,11 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.ContentValues;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,10 +14,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class SettingsActivity extends ListActivity {
+public class SettingsActivity extends Activity {
 	String [] taskLengthOptions = {
 		"Task duration", "Break duration"
 	};
@@ -21,12 +26,14 @@ public class SettingsActivity extends ListActivity {
 	SeekBar sb_taskDuration;
 	SeekBar sb_breakDuration;
 
+	enum SETTINGS {
+		TASK_DURATION, BREAK_DURATION
+	};
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_settings);
-
-		setListAdapter(new SettingsAdapter());
 	}
 
 	@Override
@@ -42,53 +49,31 @@ public class SettingsActivity extends ListActivity {
 		super.onDestroy();
 	}
 
-	private class SettingsAdapter extends ArrayAdapter<String> {
-		SettingsAdapter() {
-			super(SettingsActivity.this, R.layout.settings_duration, R.id.settingName, taskLengthOptions);
-		}
+	private ProgressBar makeProgressBarSetting(String taskName, int length) {
+		Resources res = getResources();
+		float scale = res.getDisplayMetrics().density;
 
-		@NonNull
-		@Override
-		public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-			// Keep the current row
-			View row = super.getView(position, convertView, parent);
+		// Create the parent layout which is going to hold the widgets
+		LinearLayout parent = new LinearLayout(this);
+		parent.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+		parent.setOrientation(LinearLayout.VERTICAL);
 
-			// Set the setting name of the row
-			((TextView) row.findViewById(R.id.settingName)).setText(taskLengthOptions[position]);
+		// Create the TextView widget for the setting name
+		TextView name = new TextView(this);
+		name.setText(taskName);
+		name.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+		name.setTextSize(res.getDimension(R.dimen.setting_name_textSize));
+		name.setTextColor(res.getColor(R.color.black, this.getTheme()));
+		name.setPadding(
+				pixelsToDensityPixels(15),
+				pixelsToDensityPixels(15),
+				0,
+				pixelsToDensityPixels(5));
 
-			// Find the duration of the current setting from the database
-			Cursor cursor = Database.getSettings();
-			int duration = -1;
-
-			if (cursor.moveToNext()) {
-				switch (position) {
-					case 0:
-						duration = cursor.getInt(0);
-						sb_taskDuration = row.findViewById(R.id.seekBar);
-						break;
-					case 1:
-						duration = cursor.getInt(1);
-						sb_breakDuration = row.findViewById(R.id.seekBar);
-						break;
-					default:
-						throw new RuntimeException("The size of the array must match the switch cases");
-				}
-			}
-
-			if ( duration != -1 ) {
-				// Convert the duration from milliseconds to minutes
-				duration = duration / 1000 / 60;
-			} else {
-				throw new RuntimeException("The database didn't return the settings");
-			}
-
-			// Set the seekbar and the textview to display the correct duration
-			LinearLayout seekBarRow = (LinearLayout) row.findViewById(R.id.seekBarRow);
-			//((SeekBar) seekBarRow.findViewById(R.id.seekBar)).setProgress(duration);
-			((TextView) seekBarRow.findViewById(R.id.settingDuration)).setText(duration + " minutes");
-
-			return row;
-		}
+		// TODO: Add linear layout with seekbar and textview for the minutes
 	}
 
+	private int pixelsToDensityPixels(float pixels) {
+		return (int) (getResources().getDisplayMetrics().density * pixels + .5f);
+	}
 }
