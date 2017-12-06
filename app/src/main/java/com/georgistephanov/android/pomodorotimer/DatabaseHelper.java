@@ -33,25 +33,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		sqLiteDatabase.execSQL("CREATE TABLE task (name TEXT, length REAL NOT NULL, completed BYTE DEFAULT 0)");
 		sqLiteDatabase.execSQL("CREATE TABLE settings (task_length INTEGER NOT NULL, break_length INTEGER NOT NULL)");
 
-		ContentValues contentValues = new ContentValues();
 
+		// Set the default values
+		ContentValues contentValues = new ContentValues();
 		contentValues.put(SETTINGS_TASK_LEGTH, 25000);
 		contentValues.put(SETTINGS_BREAK_LENGTH, 5000);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
-	}
-
-	// TODO: This is to be removed as it stands for testing purposes
-	@Override
-	public void onOpen(SQLiteDatabase db) {
-		db.delete(SETTINGS_TABLE, "? > 0", new String[] {"SETTINGS_TASK_LENGTH"});
-
-		ContentValues contentValues = new ContentValues();
-		contentValues.put(SETTINGS_TASK_LEGTH, 12000);
-		contentValues.put(SETTINGS_BREAK_LENGTH, 4000);
-
-		db.insert(SETTINGS_TABLE, null, contentValues);
-
-		super.onOpen(db);
 	}
 
 	@Override

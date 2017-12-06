@@ -85,6 +85,11 @@ public class Database {
 	private final static class UpdateSettings extends AsyncTask<ContentValues, Void, Void> {
 		@Override
 		protected Void doInBackground(ContentValues... contentValues) {
+			// Delete the current settings
+			databaseHelper.getWritableDatabase()
+					.execSQL("DELETE FROM settings");
+
+			// Insert the new settings
 			databaseHelper.getWritableDatabase()
 					.insert(databaseHelper.getSettingsTable(), null, contentValues[0]);
 

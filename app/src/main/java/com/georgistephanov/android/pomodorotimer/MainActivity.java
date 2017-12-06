@@ -40,6 +40,8 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -100,16 +102,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Get the database helper instance
 		database = Database.getInstance(this);
 
-		// Read the settings from the database
-		Cursor cursor = Database.getSettings();
-		if (cursor.moveToNext()) {
-			taskLength = cursor.getInt(0);
-			breakLength = cursor.getInt(1);
-		}
-
-		totalSecondsLeft = taskLength / 1000;
-
-		updateTime();
+		// Get the task and break lengths from the database
+		updateTimeFromSettings();
 	}
 
 	@Override
@@ -118,6 +112,27 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		super.onDestroy();
 	}
 
+	@Override
+	protected void onResume() {
+		updateTimeFromSettings();
+		super.onResume();
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem menuItem) {
+		switch(menuItem.getItemId()) {
+			case R.id.menu_statistics:
+				return false;
+			case R.id.menu_settings:
+				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			default:
+				return false;
+		}
+	}
+
+
+	/* =========== On click methods =========== */
 	/**
 	 * This method is called when the `X` of the edit text field for the task
 	 * name has been clicked. It deletes the text of the edit text if such is
@@ -207,19 +222,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		popupMenu.show();
 	}
 
-	@Override
-	public boolean onMenuItemClick(MenuItem menuItem) {
-		switch(menuItem.getItemId()) {
-			case R.id.menu_statistics:
-				return false;
-			case R.id.menu_settings:
-				startActivity(new Intent(this, SettingsActivity.class));
-				return true;
-			default:
-				return false;
-		}
-	}
 
+	/* =========== Private methods =========== */
 	/**
 	 * Default start task method which overloads and calls the main startTask
 	 * method with the default settings.
@@ -246,7 +250,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			showButtons();
 
 			// Start the progress bar pb_animation
-			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", 500, 0);
+			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", 3600, 0);
 			pb_animation.setDuration(duration);
 			pb_animation.setInterpolator(new LinearInterpolator());
 			pb_animation.start();
@@ -256,6 +260,22 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				et_taskName.clearFocus();
 			}
 		}
+	}
+
+	/**
+	 * Reads the settings from the database and updates the task and break lengths.
+	 */
+	private void updateTimeFromSettings() {
+		// Read the settings from the database
+		Cursor cursor = Database.getSettings();
+		if (cursor.moveToNext()) {
+			taskLength = cursor.getInt(0);
+			breakLength = cursor.getInt(1);
+		}
+
+		totalSecondsLeft = taskLength / 1000;
+
+		updateTime();
 	}
 
 	/**
@@ -318,7 +338,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		updateTime();
 
 		// Animate the progressbar backwards to its beginning state
-		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 500);
+		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 3600);
 		animation.setDuration(500);
 		animation.start();
 

@@ -19,6 +19,8 @@ import android.widget.SeekBar;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import java.util.Observable;
+
 public class SettingsActivity extends Activity {
 	String [] taskLengthOptions = {
 		"Task duration", "Break duration"
@@ -34,6 +36,8 @@ public class SettingsActivity extends Activity {
 		TASK_DURATION, BREAK_DURATION
 	};
 
+	boolean settingsChanged = false;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -43,16 +47,16 @@ public class SettingsActivity extends Activity {
 	}
 
 	@Override
-	protected void onDestroy() {
+	protected void onPause() {
 		DatabaseHelper db = Database.getInstance(this);
 
 		// Set the changes made to the database
 		ContentValues cv = new ContentValues();
 		cv.put(db.getSettingsTaskLength(), sb_taskDuration.getProgress() * 60 * 1000);
 		cv.put(db.getSettingsBreakLength(), sb_breakDuration.getProgress() * 60 * 1000);
-		Database.insert(cv);
+		Database.updateSettings(cv);
 
-		super.onDestroy();
+		super.onPause();
 	}
 
 	private void inflateSettings() {
@@ -60,16 +64,25 @@ public class SettingsActivity extends Activity {
 		Resources res = getResources();
 
 		if (cursor.moveToNext()) {
+			// Create instances of the text views for the seek bars
+			tv_taskDuration = new TextView(this);
+			tv_breakDuration = new TextView(this);
+
+			// Get the correct length of the settings in minutes
 			int minutes_taskDuration = cursor.getInt(0) / 1000 / 60;
 			int minutes_breakDuration = cursor.getInt(1) / 1000 / 60;
 
+			// Inflate the setting rows
 			sb_taskDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_task_duration), minutes_taskDuration, tv_taskDuration);
 			sb_breakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_break_duration), minutes_breakDuration, tv_breakDuration);
+
+			// Set the change listeners to the seek bars
+			sb_taskDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_taskDuration));
+			sb_breakDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_breakDuration));
 		}
-
-		sb_taskDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_taskDuration));
-
-		//sb_breakDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_breakDuration));
+		else {
+			throw new RuntimeException("Database failed while getting the settings.");
+		}
 	}
 
 	private ProgressBar makeProgressBarSetting(String taskName, int length, TextView durationLabel) {
@@ -113,7 +126,6 @@ public class SettingsActivity extends Activity {
 		seekBar.setProgress(length);
 
 		// Create the text view which holds the minutes
-		durationLabel = new TextView(this);
 		durationLabel.setLayoutParams(new LinearLayout.LayoutParams(0, WRAP_CONTENT, 2f));
 		durationLabel.setPadding(
 				pixelsToDensityPixels(10),
@@ -151,6 +163,7 @@ public class SettingsActivity extends Activity {
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 			boundLabel.setText(seekBar.getProgress() + " minutes");
+			settingsChanged = true;
 		}
 
 		@Override
