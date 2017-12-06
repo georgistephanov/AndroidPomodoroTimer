@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
@@ -63,6 +64,8 @@ public class SettingsActivity extends Activity {
 		Cursor cursor = Database.getSettings();
 		Resources res = getResources();
 
+		addSeparator(getResources().getString(R.string.settings_general_separator));
+
 		if (cursor.moveToNext()) {
 			// Create instances of the text views for the seek bars
 			tv_taskDuration = new TextView(this);
@@ -83,6 +86,24 @@ public class SettingsActivity extends Activity {
 		else {
 			throw new RuntimeException("Database failed while getting the settings.");
 		}
+	}
+
+	private void addSeparator(String separatorText) {
+		TextView separator = new TextView(this);
+		separator.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+		separator.setPadding(
+				0,
+				pixelsToDensityPixels(15),
+				0,
+				0
+		);
+		separator.setText(separatorText);
+		separator.setTextSize(pixelsToScaledPixels(getResources().getDimension(R.dimen.separator_textSize)));
+		separator.setTextColor(getResources().getColor(R.color.darkRed, this.getTheme()));
+		separator.setTypeface(Typeface.create("sans-seeerif-medium", Typeface.BOLD));
+
+		// Add the view to the main layout
+		((LinearLayout) findViewById(R.id.mainSettingsLayout)).addView(separator);
 	}
 
 	private ProgressBar makeProgressBarSetting(String taskName, int length, TextView durationLabel) {

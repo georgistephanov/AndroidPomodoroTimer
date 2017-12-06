@@ -11,16 +11,4 @@
 	android:orientation="vertical"
 	tools:context="com.georgistephanov.android.pomodorotimer.SettingsActivity">
 
-	<!-- Menu separator -->
-	<TextView
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:paddingTop="15dp"
-
-		android:text="General"
-		android:textSize="@dimen/separator_textSize"
-		android:textColor="@color/darkRed"
-		android:fontFamily="sans-serif-medium"/>
-
-
 </LinearLayout>
