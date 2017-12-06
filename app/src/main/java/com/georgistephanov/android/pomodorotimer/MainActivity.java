@@ -26,9 +26,7 @@ import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,8 +38,6 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -51,7 +47,10 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 	// The length of the task and the break in milliseconds
 	private int taskLength;
-	private int breakLength;
+	private int shortBreakLength;
+	private int longBreakLength;
+	private int longBreakAfter;
+	private int numOfConsecutiveBreaks = 0;
 
 	// The state of the current timer in seconds
 	private int totalSecondsLeft;
@@ -113,7 +112,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	}
 
 	@Override
-	protected void onResume() {
+	protected void onResume()  {
 		updateTimeFromSettings();
 		super.onResume();
 	}
@@ -196,7 +195,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	public void onBreakButtonClick(View view) {
 		isBreak = true;
 		setBreakColors();
-		startTask(breakLength);
+		startTask(shortBreakLength);
 	}
 
 	/**
@@ -270,7 +269,22 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		Cursor cursor = Database.getSettings();
 		if (cursor.moveToNext()) {
 			taskLength = cursor.getInt(0);
-			breakLength = cursor.getInt(1);
+			shortBreakLength = cursor.getInt(1);
+			longBreakLength = cursor.getInt(2);
+			longBreakAfter = cursor.getInt(3);
+
+			// If the task length is set to zero use the default task length
+			if (taskLength == 0) {
+				taskLength = Database.getInstance(this).getDefaultTaskLength();
+			}
+
+			// If the break length is set to zero use the default break length
+			if (shortBreakLength == 0) {
+				shortBreakLength = Database.getInstance(this).getDefaultBreakLength();
+			}
+
+		} else {
+			throw new RuntimeException("Database failed while getting the settings.");
 		}
 
 		totalSecondsLeft = taskLength / 1000;

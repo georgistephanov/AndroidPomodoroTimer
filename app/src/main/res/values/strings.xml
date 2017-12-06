@@ -18,5 +18,9 @@
 
 	<string name="settings_general_separator">General</string>
 	<string name="settings_task_duration">Task duration</string>
-	<string name="settings_break_duration">Break duration</string>
+	<string name="settings_short_break_duration">Short break duration</string>
+	<string name="settings_long_break_duration">Long break duration</string>
+	<string name="settings_long_break_after">Tasks before a long break</string>
+	<string name="settings_duration_label_minutes">%d minutes</string>
+	<string name="settings_duration_label_sessions">%d sessions</string>
 </resources>
