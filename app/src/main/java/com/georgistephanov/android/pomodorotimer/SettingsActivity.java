@@ -24,6 +24,10 @@ public class SettingsActivity extends Activity {
 	SeekBar sb_longBreakAfter;
 	TextView tv_longBreakAfter;
 
+	/**
+	 * This is used to define the label name of the progress bar, as there are currently 4 settings
+	 * with progress bar -> 3
+	 */
 	enum DurationUnit {
 		MINUTES, SESSIONS
 	};
@@ -45,8 +49,10 @@ public class SettingsActivity extends Activity {
 
 			// Set the changes made to the database
 			ContentValues cv = new ContentValues();
-			cv.put(db.getSettingsTaskLength(), sb_taskDuration.getProgress() * 60 * 1000);
-			cv.put(db.getSettingsBreakLength(), sb_shortBreakDuration.getProgress() * 60 * 1000);
+			cv.put(db.getSettingsTaskColumnName(), sb_taskDuration.getProgress() * 60 * 1000);
+			cv.put(db.getSettingsShortBreakLengthColumnName(), sb_shortBreakDuration.getProgress() * 60 * 1000);
+			cv.put(db.getSettingsLongBreakLengthColumnName(), sb_longBreakDuration.getProgress() * 60 * 1000);
+			cv.put(db.getSettingsLongBreakAfterColumnName(), sb_longBreakAfter.getProgress());
 			Database.updateSettings(cv);
 
 			settingsChanged = false;
@@ -77,23 +83,25 @@ public class SettingsActivity extends Activity {
 			int minutes_longBreakDuration = cursor.getInt(2) / 1000 / 60;
 			int longBreakAfter = cursor.getInt(3);
 
-			int minutesMaxLength = 60;
+			int taskMaxLength = 60;
+			int shortBreakMaxLength = 30;
+			int longBreakMaxLength = 60;
 			int longBreakAfterMaxLength = 10;
 
 			// Inflate the setting rows
 			sb_taskDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_task_duration),
 					minutes_taskDuration,
-					minutesMaxLength,
+					taskMaxLength,
 					tv_taskDuration,
 					DurationUnit.MINUTES);
 			sb_shortBreakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_short_break_duration),
 					minutes_shortBreakDuration,
-					minutesMaxLength,
+					shortBreakMaxLength,
 					tv_shortBreakDuration,
 					DurationUnit.MINUTES);
 			sb_longBreakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_long_break_duration),
 					minutes_longBreakDuration,
-					minutesMaxLength,
+					longBreakMaxLength,
 					tv_longBreakDuration,
 					DurationUnit.MINUTES);
 			sb_longBreakAfter = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_long_break_after),

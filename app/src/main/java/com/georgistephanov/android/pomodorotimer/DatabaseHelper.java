@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "pomodoro";
-	private static final int SCHEMA = 1;
+	private static final int SCHEMA = 3;
 
 	// The task table name and its columns
 	private static final String TASK_TABLE = "task";
@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	// Default settings
 	private static final int DEFAULT_TASK_LENGTH = 1500000;
-	private static final int DEFAULT_BREAK_LENGTH = 300000;
+	private static final int DEFAULT_SHORT_BREAK_LENGTH = 300000;
 	private static final int DEFAULT_LONG_BREAK_LENGTH = 600000;
 	private static final int DEFAULT_LONG_BREAK_AFTER = 4;
 
@@ -49,7 +49,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		// Set the default values
 		ContentValues contentValues = new ContentValues();
 		contentValues.put(SETTINGS_TASK_LEGTH, DEFAULT_TASK_LENGTH);
-		contentValues.put(SETTINGS_SHORT_BREAK_LENGTH, DEFAULT_BREAK_LENGTH);
+		contentValues.put(SETTINGS_SHORT_BREAK_LENGTH, DEFAULT_SHORT_BREAK_LENGTH);
 		contentValues.put(SETTINGS_LONG_BREAK_LENGTH, DEFAULT_LONG_BREAK_LENGTH);
 		contentValues.put(SETTINGS_LONG_BREAK_AFTER, DEFAULT_LONG_BREAK_AFTER);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
@@ -70,40 +70,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		// Set the default values
 		ContentValues contentValues = new ContentValues();
 		contentValues.put(SETTINGS_TASK_LEGTH, DEFAULT_TASK_LENGTH);
-		contentValues.put(SETTINGS_SHORT_BREAK_LENGTH, DEFAULT_BREAK_LENGTH);
+		contentValues.put(SETTINGS_SHORT_BREAK_LENGTH, DEFAULT_SHORT_BREAK_LENGTH);
 		contentValues.put(SETTINGS_LONG_BREAK_LENGTH, DEFAULT_LONG_BREAK_LENGTH);
 		contentValues.put(SETTINGS_LONG_BREAK_AFTER, DEFAULT_LONG_BREAK_AFTER);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
 	}
 
 
-	public String getTaskTable() {
+	public String getTaskTableName() {
 		return TASK_TABLE;
 	}
-	public String getTaskName() {
+	public String getTaskNameColumnName() {
 		return TASK_NAME;
 	}
-	public String getTaskLength() {
+	public String getTaskLengthColumnName() {
 		return TASK_LENGTH;
 	}
-	public String getTaskCompleted() {
+	public String getTaskCompletedColumnName() {
 		return TASK_COMPLETED;
 	}
 
-	public String getSettingsTable() {
+	public String getSettingsTableName() {
 		return SETTINGS_TABLE;
 	}
-	public String getSettingsTaskLength() {
+	public String getSettingsTaskColumnName() {
 		return SETTINGS_TASK_LEGTH;
 	}
-	public String getSettingsBreakLength() {
+	public String getSettingsShortBreakLengthColumnName() {
 		return SETTINGS_SHORT_BREAK_LENGTH;
+	}
+	public String getSettingsLongBreakLengthColumnName() {
+		return SETTINGS_LONG_BREAK_LENGTH;
+	}
+	public String getSettingsLongBreakAfterColumnName() {
+		return SETTINGS_LONG_BREAK_AFTER;
 	}
 
 	public int getDefaultTaskLength() {
 		return DEFAULT_TASK_LENGTH;
 	}
-	public int getDefaultBreakLength() {
-		return DEFAULT_BREAK_LENGTH;
+	public int getDefaultShortBreakLength() {
+		return DEFAULT_SHORT_BREAK_LENGTH;
+	}
+	public int getDefaultLongBreakLength() {
+		return DEFAULT_LONG_BREAK_LENGTH;
+	}
+	public int getDefaultLongBreakAfter() {
+		return DEFAULT_LONG_BREAK_AFTER;
 	}
 }

@@ -50,7 +50,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	private int shortBreakLength;
 	private int longBreakLength;
 	private int longBreakAfter;
-	private int numOfConsecutiveBreaks = 0;
+	private int numOfConsecutiveTasks = 0;
 
 	// The state of the current timer in seconds
 	private int totalSecondsLeft;
@@ -62,6 +62,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	private boolean isTimerRunning = false;
 	private boolean isBreak = false;
 	private boolean hasEnded = false;
+	private boolean settingsUpdatePending = false;
 
 	ObjectAnimator pb_animation;
 
@@ -113,7 +114,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 	@Override
 	protected void onResume()  {
-		updateTimeFromSettings();
+		if ( !isTimerRunning ) {
+			updateTimeFromSettings();
+		} else {
+			settingsUpdatePending = true;
+		}
 		super.onResume();
 	}
 
@@ -155,6 +160,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	public void onStartButtonClick(View view) {
 		if (!isTimerRunning) {
 			startTask();
+			numOfConsecutiveTasks++;
 		}
 	}
 
@@ -180,6 +186,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * @param view the task end button
 	 */
 	public void onStopButtonClick(View view) {
+		if ( !isBreak ) {
+			// Restart the number of consecutive breaks
+			numOfConsecutiveTasks = 0;
+		}
+
 		hasEnded = false;
 		pb_animation.end();
 		onTimerEnd(false);
@@ -195,7 +206,14 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	public void onBreakButtonClick(View view) {
 		isBreak = true;
 		setBreakColors();
-		startTask(shortBreakLength);
+
+		// Start a break depending on whether it is supposed to be a short or a long break
+		if ( longBreakAfter == numOfConsecutiveTasks ) {
+			startTask(longBreakLength);
+			numOfConsecutiveTasks = 0;
+		} else {
+			startTask(shortBreakLength);
+		}
 	}
 
 	/**
@@ -278,9 +296,19 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				taskLength = Database.getInstance(this).getDefaultTaskLength();
 			}
 
-			// If the break length is set to zero use the default break length
+			// If the short break length is set to zero use the default short break length
 			if (shortBreakLength == 0) {
-				shortBreakLength = Database.getInstance(this).getDefaultBreakLength();
+				shortBreakLength = Database.getInstance(this).getDefaultShortBreakLength();
+			}
+
+			// If the long break length is set to zero use the default long break length
+			if (longBreakLength == 0) {
+				longBreakLength = Database.getInstance(this).getDefaultLongBreakLength();
+			}
+
+			// If the long break after x sessions is set to zero use the default long break after
+			if (longBreakAfter == 0) {
+				longBreakAfter = Database.getInstance(this).getDefaultLongBreakAfter();
 			}
 
 		} else {
@@ -340,11 +368,17 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 					: (byte) 0;
 
 			ContentValues contentValues = new ContentValues();
-			contentValues.put(database.getTaskName(), taskName);
-			contentValues.put(database.getTaskLength(), taskSecondsCompleted);
-			contentValues.put(database.getTaskCompleted(), taskCompleted);
+			contentValues.put(database.getTaskNameColumnName(), taskName);
+			contentValues.put(database.getTaskLengthColumnName(), taskSecondsCompleted);
+			contentValues.put(database.getTaskCompletedColumnName(), taskCompleted);
 
 			Database.insert(contentValues);
+		}
+
+		// Do the settings update if such is pending
+		if ( settingsUpdatePending ) {
+			updateTimeFromSettings();
+			settingsUpdatePending = false;
 		}
 
 		// Reset the clock to the initial length of the task

@@ -1,6 +1,5 @@
 package com.georgistephanov.android.pomodorotimer;
 
-import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -91,7 +90,7 @@ public class Database {
 
 			// Insert the new settings
 			databaseHelper.getWritableDatabase()
-					.insert(databaseHelper.getSettingsTable(), null, contentValues[0]);
+					.insert(databaseHelper.getSettingsTableName(), null, contentValues[0]);
 
 			return null;
 		}
@@ -101,7 +100,7 @@ public class Database {
 		@Override
 		protected Void doInBackground(ContentValues... contentValues) {
 			databaseHelper.getWritableDatabase()
-					.insert(databaseHelper.getTaskTable(), null, contentValues[0]);
+					.insert(databaseHelper.getTaskTableName(), null, contentValues[0]);
 
 			return null;
 		}
