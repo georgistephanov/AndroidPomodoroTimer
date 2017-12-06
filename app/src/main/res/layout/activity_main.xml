@@ -49,12 +49,13 @@
 			android:id="@+id/taskName"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:ems="10"
-			android:fontFamily="sans-serif-light"
-			android:hint="@string/et_placeholder"
-			android:inputType="textPersonName"
 			android:paddingLeft="@dimen/et_paddingLeft"
-			android:textSize="@dimen/et_textSize" />
+			android:ems="10"
+			android:hint="@string/et_placeholder"
+			android:fontFamily="sans-serif-light"
+			android:inputType="textPersonName"
+			android:textSize="@dimen/et_textSize"
+			android:textColor="@color/black"/>
 
 		<ImageButton
 			android:id="@+id/deleteTask"
