@@ -45,6 +45,7 @@
 	<string name="cancel">Cancel</string>
 
 	<string name="last_month_statistics">Last month</string>
+	<string name="stats">%d days</string>
 
 	<string name="plain_string">%s</string>
 </resources>
