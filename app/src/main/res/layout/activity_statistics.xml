@@ -23,14 +23,65 @@
 			android:textSize="@dimen/et_textSize"
 			android:translationZ="5dp" />
 
-		<com.jjoe64.graphview.GraphView
+		<LinearLayout
 			android:layout_width="match_parent"
-			android:layout_height="300dip"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:background="@color/white"
 			android:layout_marginTop="10dp"
-			android:layout_marginLeft="20dp"
-			android:layout_marginRight="20dp"
-			android:id="@+id/graph"
-			android:background="@color/white"/>
+			android:layout_marginLeft="12dp"
+			android:layout_marginRight="12dp"
+			android:translationZ="5dp">
+
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:text="Working time"
+				android:padding="20dp"/>
+
+			<lecho.lib.hellocharts.view.LineChartView
+				android:id="@+id/chart"
+				android:layout_width="match_parent"
+				android:layout_height="300dp"
+				android:layout_marginLeft="20dp"
+				android:layout_marginRight="20dp"
+				android:layout_marginBottom="10dp"/>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:background="@color/white"
+			android:layout_marginLeft="12dp"
+			android:layout_marginRight="12dp"
+			android:translationZ="4dp"
+			android:orientation="vertical">
+
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textSize="16sp"
+				android:paddingTop="20dp"
+				android:paddingLeft="20dp"
+				android:paddingRight="20dp"
+				android:background="@color/white"
+				android:text="Last 7 days"/>
+
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textSize="16sp"
+				android:paddingTop="10dp"
+				android:paddingLeft="20dp"
+				android:paddingRight="20dp"
+				android:paddingBottom="20dp"
+				android:background="@color/white"
+				android:text="Last 7 days"/>
+
+		</LinearLayout>
+
 
 	</LinearLayout>
 

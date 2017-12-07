@@ -32,7 +32,7 @@ dependencies {
 	implementation 'com.android.support:appcompat-v7:26.1.0'
 	implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 	implementation 'com.android.support:support-v4:26.1.0'
-	compile 'com.jjoe64:graphview:4.2.1'
+	compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
 	compile 'com.android.support.constraint:constraint-layout:1.0.2'
 	compile('de.psdev.licensesdialog:licensesdialog:1.8.3')
 	testImplementation 'junit:junit:4.12'
