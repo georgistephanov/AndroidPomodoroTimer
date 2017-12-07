@@ -1,11 +1,14 @@
 package com.georgistephanov.android.pomodorotimer;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -33,6 +36,10 @@ public class SettingsActivity extends Activity {
 
 	CheckBox cb_vibrate;
 	CheckBox cb_playSound;
+
+	CheckBox cb_disableSoundVibration;
+	CheckBox cb_disableWiFi;
+	CheckBox cb_keepScreenOn;
 
 	/**
 	 * This is used to define the label name of the progress bar, as there are currently 4 settings
@@ -67,6 +74,9 @@ public class SettingsActivity extends Activity {
 			cv.put(db.getSettingsLongBreakAfterColumnName(), sb_longBreakAfter.getProgress());
 			cv.put(db.getSettingsNotificationsVibrate(), cb_vibrate.isChecked() ? 1 : 0);
 			cv.put(db.getSettingsNotificationsPlaySound(), cb_playSound.isChecked() ? 1 : 0);
+			cv.put(db.getSettingsKeepScreen(), cb_keepScreenOn.isChecked() ? 1 : 0);
+			cv.put(db.getSettingsDisableVibrationSound(), cb_disableSoundVibration.isChecked() ? 1 : 0);
+			cv.put(db.getSettingsDisableWifi(), cb_disableWiFi.isChecked() ? 1 : 0);
 			Database.updateSettings(cv);
 
 			settingsChanged = false;
@@ -84,65 +94,81 @@ public class SettingsActivity extends Activity {
 		addSeparator(res.getString(R.string.settings_general_separator));
 
 		if (cursor.moveToNext()) {
-			// Create instances of the text views for the seek bars
-			tv_taskDuration = new TextView(this);
-			tv_shortBreakDuration = new TextView(this);
-			tv_longBreakDuration = new TextView(this);
-			tv_longBreakAfter = new TextView(this);
 
-			// Get the correct length of the settings in minutes
+			// Get all notification settings
 			int minutes_taskDuration = cursor.getInt(0) / 1000 / 60;
 			int minutes_shortBreakDuration = cursor.getInt(1) / 1000 / 60;
 			int minutes_longBreakDuration = cursor.getInt(2) / 1000 / 60;
 			int longBreakAfter = cursor.getInt(3);
-
-			int taskMaxLength = 60;
-			int shortBreakMaxLength = 30;
-			int longBreakMaxLength = 60;
-			int longBreakAfterMaxLength = 10;
-
-			// Inflate the setting rows
-			sb_taskDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_task_duration),
-					minutes_taskDuration,
-					taskMaxLength,
-					tv_taskDuration,
-					DurationUnit.MINUTES);
-			sb_shortBreakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_short_break_duration),
-					minutes_shortBreakDuration,
-					shortBreakMaxLength,
-					tv_shortBreakDuration,
-					DurationUnit.MINUTES);
-			sb_longBreakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_long_break_duration),
-					minutes_longBreakDuration,
-					longBreakMaxLength,
-					tv_longBreakDuration,
-					DurationUnit.MINUTES);
-			sb_longBreakAfter = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_long_break_after),
-					longBreakAfter,
-					longBreakAfterMaxLength,
-					tv_longBreakAfter,
-					DurationUnit.SESSIONS);
-
-
-			// Set the change listeners to the seek bars
-			sb_taskDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_taskDuration, DurationUnit.MINUTES));
-			sb_shortBreakDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_shortBreakDuration, DurationUnit.MINUTES));
-			sb_longBreakDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_longBreakDuration, DurationUnit.MINUTES));
-			sb_longBreakAfter.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_longBreakAfter, DurationUnit.SESSIONS));
-
-
-			// Get the notifications settings
 			boolean vibrate = cursor.getInt(4) != 0;
 			boolean playSound = cursor.getInt(5) != 0;
+			boolean keepScreenOn = cursor.getInt(6) != 0;
+			boolean disableVibrationSounds = cursor.getInt(7) != 0;
+			boolean disableWiFi = cursor.getInt(8) != 0;
 
-			// Add the notificator settings views
-			addSeparator(res.getString(R.string.settings_notifications_separator));
-			cb_vibrate = makeCheckBoxSetting(res.getString(R.string.settings_notification_vibrate), vibrate);
-			cb_playSound = makeCheckBoxSetting(res.getString(R.string.settings_notification_play_sound), playSound);
+			// Generate the General settings group
+			{
+				// Create instances of the text views for the seek bars
+				tv_taskDuration = new TextView(this);
+				tv_shortBreakDuration = new TextView(this);
+				tv_longBreakDuration = new TextView(this);
+				tv_longBreakAfter = new TextView(this);
 
-			// Set the check boxes change listeners
-			cb_vibrate.setOnCheckedChangeListener(new CheckBoxChangeListener());
-			cb_playSound.setOnCheckedChangeListener(new CheckBoxChangeListener());
+				int taskMaxLength = 60;
+				int shortBreakMaxLength = 30;
+				int longBreakMaxLength = 60;
+				int longBreakAfterMaxLength = 10;
+
+				// Inflate the setting rows
+				sb_taskDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_task_duration),
+						minutes_taskDuration,
+						taskMaxLength,
+						tv_taskDuration,
+						DurationUnit.MINUTES);
+				sb_shortBreakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_short_break_duration),
+						minutes_shortBreakDuration,
+						shortBreakMaxLength,
+						tv_shortBreakDuration,
+						DurationUnit.MINUTES);
+				sb_longBreakDuration = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_long_break_duration),
+						minutes_longBreakDuration,
+						longBreakMaxLength,
+						tv_longBreakDuration,
+						DurationUnit.MINUTES);
+				sb_longBreakAfter = (SeekBar) makeProgressBarSetting(res.getString(R.string.settings_long_break_after),
+						longBreakAfter,
+						longBreakAfterMaxLength,
+						tv_longBreakAfter,
+						DurationUnit.SESSIONS);
+			}
+
+			// Generate During Session settings group
+			{
+				addSeparator(res.getString(R.string.settings_during_session_separator));
+				cb_keepScreenOn = makeCheckBoxSetting(res.getString(R.string.settings_during_keep_screen), keepScreenOn);
+				cb_disableSoundVibration = makeCheckBoxSetting(res.getString(R.string.settings_during_disable_sound_vibration), disableVibrationSounds);
+				cb_disableWiFi = makeCheckBoxSetting(res.getString(R.string.settings_during_disable_wifi), disableWiFi);
+			}
+
+			// Generate Notifications on Session End settings group
+			{
+				addSeparator(res.getString(R.string.settings_notifications_separator));
+				cb_vibrate = makeCheckBoxSetting(res.getString(R.string.settings_notification_vibrate), vibrate);
+				cb_playSound = makeCheckBoxSetting(res.getString(R.string.settings_notification_play_sound), playSound);
+			}
+
+			// Set the change listeners to all views
+			{
+				sb_taskDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_taskDuration, DurationUnit.MINUTES));
+				sb_shortBreakDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_shortBreakDuration, DurationUnit.MINUTES));
+				sb_longBreakDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_longBreakDuration, DurationUnit.MINUTES));
+				sb_longBreakAfter.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_longBreakAfter, DurationUnit.SESSIONS));
+				cb_vibrate.setOnCheckedChangeListener(new CheckBoxChangeListener());
+				cb_playSound.setOnCheckedChangeListener(new CheckBoxChangeListener());
+				cb_keepScreenOn.setOnCheckedChangeListener(new CheckBoxChangeListener());
+				cb_disableSoundVibration.setOnCheckedChangeListener(new VibrationSoundChangeListener());
+				cb_disableWiFi.setOnCheckedChangeListener(new CheckBoxChangeListener());
+			}
 		}
 		else {
 			throw new RuntimeException("Database failed while getting the settings.");
@@ -354,6 +380,24 @@ public class SettingsActivity extends Activity {
 	private class CheckBoxChangeListener implements CheckBox.OnCheckedChangeListener {
 		@Override
 		public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+			settingsChanged = true;
+		}
+	}
+
+	private class VibrationSoundChangeListener implements CheckBox.OnCheckedChangeListener {
+		@Override
+		public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+			NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+			if ( !notificationManager.isNotificationPolicyAccessGranted() ) {
+				startActivityForResult(new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS), 0);
+			}
+
+			if ( !notificationManager.isNotificationPolicyAccessGranted() ) {
+				compoundButton.setChecked(false);
+				return;
+			}
+
 			settingsChanged = true;
 		}
 	}

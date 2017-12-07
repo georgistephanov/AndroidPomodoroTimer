@@ -19,6 +19,7 @@
 
 	<string name="settings_general_separator">General</string>
 	<string name="settings_notifications_separator">Notifications on session end</string>
+	<string name="settings_during_session_separator">During work session</string>
 
 	<string name="settings_task_duration">Session duration</string>
 	<string name="settings_short_break_duration">Short break duration</string>
@@ -29,6 +30,10 @@
 
 	<string name="settings_notification_play_sound">Play sound</string>
 	<string name="settings_notification_vibrate">Vibrate</string>
+
+	<string name="settings_during_keep_screen">Keep the screen on</string>
+	<string name="settings_during_disable_sound_vibration">Disable sounds and vibration</string>
+	<string name="settings_during_disable_wifi">Disable Wi-Fi</string>
 
 	<string name="plain_string">%s</string>
 </resources>

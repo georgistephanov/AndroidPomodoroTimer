@@ -16,15 +16,19 @@ package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
+import android.media.AudioManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
@@ -73,6 +77,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	ImageButton b_stop;
 	Button b_break;
 	Button b_continue;
+
+	private int deviceDefaultRingerMode;
+	private boolean deviceDefaultWifiState;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -269,6 +276,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			totalSecondsLeft = duration / 1000;
 			updateTime();
 
+			// Update the during session settings
+			updateDuringSessionSettings();
+
 			// Start the timer
 			startTimer();
 			showButtons();
@@ -345,6 +355,77 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	}
 
 	/**
+	 * Gets the current/new During work session settings from the database and updates the
+	 * current settings if they're different.
+	 */
+	private void updateDuringSessionSettings() {
+		Cursor cursor = Database.getSettings();
+
+		if (cursor.moveToNext()) {
+			boolean keepScreenOn = cursor.getInt(6) != 0;
+			boolean disableVibrationSounds = cursor.getInt(7) != 0;
+			boolean disableWiFi = cursor.getInt(8) != 0;
+
+			if (keepScreenOn) {
+				getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			} else {
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			}
+
+			NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			if ( notificationManager.isNotificationPolicyAccessGranted() ) {
+				if (disableVibrationSounds) {
+					AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+					deviceDefaultRingerMode = audioManager.getRingerMode();
+					audioManager.setRingerMode(audioManager.RINGER_MODE_SILENT);
+				}
+			}
+
+			if (disableWiFi) {
+				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+				deviceDefaultWifiState = wifiManager.isWifiEnabled();
+				wifiManager.setWifiEnabled(false);
+			}
+
+		} else {
+			throw new RuntimeException("Database failed while getting the settings.");
+		}
+	}
+
+	/**
+	 * Restores the default device settings prior the beginning of the session if there had been
+	 * any settings altered during the work session.
+	 */
+	private void restoreSettingsOnEndOfSession() {
+		Cursor cursor = Database.getSettings();
+
+		if (cursor.moveToNext()) {
+			boolean keepScreenOn = cursor.getInt(6) != 0;
+			boolean disableVibrationSounds = cursor.getInt(7) != 0;
+			boolean disableWiFi = cursor.getInt(8) != 0;
+
+			if (keepScreenOn) {
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			}
+
+			NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			if ( notificationManager.isNotificationPolicyAccessGranted() ) {
+				if (disableVibrationSounds) {
+					AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+					audioManager.setRingerMode(deviceDefaultRingerMode);
+				}
+			}
+
+			if (disableWiFi) {
+				WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+				wifiManager.setWifiEnabled(deviceDefaultWifiState);
+			}
+		} else {
+			throw new RuntimeException("Database failed while getting the settings.");
+		}
+	}
+
+	/**
 	 * This method controls which method to call - updateTime() or onTimerEnd()
 	 * depending on whether the timer has reached its end or it is still running.
 	 */
@@ -381,15 +462,18 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		stopTimer();
 		showButtons();
 
+		// Restore any settings altered during the work session
+		restoreSettingsOnEndOfSession();
+
 		// Write the task session to the database
 		if ( !isBreak ) {
 			int taskSecondsCompleted = (taskLength / 1000) - totalSecondsLeft;
 			String taskName = et_taskName.getText().toString().length() != 0
 					? et_taskName.getText().toString()
 					: getResources().getString(R.string.task_default_name);
-			byte taskCompleted = totalSecondsLeft == 0
-					? (byte) 1
-					: (byte) 0;
+			int taskCompleted = totalSecondsLeft == 0
+					? 1
+					: 0;
 
 			ContentValues contentValues = new ContentValues();
 			contentValues.put(database.getTaskNameColumnName(), taskName);
