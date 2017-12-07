@@ -29,4 +29,6 @@
 
 	<string name="settings_notification_play_sound">Play sound</string>
 	<string name="settings_notification_vibrate">Vibrate</string>
+
+	<string name="plain_string">%s</string>
 </resources>
