@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
+import java.util.Calendar;
+
 /**
  * Created by Georgi on 04-Dec-17.
  */
@@ -36,10 +38,14 @@ public class Database {
 	 * finished or has been terminated early passed as a ContentValues parameter.
 	 * @param cv the content values to be inserted in the task table
 	 */
-	public static void insert(ContentValues cv) {
+	public static void addTask(ContentValues cv) {
 		new InsertTask().doInBackground(cv);
 	}
 
+	/**
+	 * Updates the settings table with the ContentValues passed as a parameters.
+	 * @param cv the new settings to be written to the database
+	 */
 	public static void updateSettings(ContentValues cv) {
 		new UpdateSettings().doInBackground(cv);
 	}
@@ -52,8 +58,8 @@ public class Database {
 		return new GetSettings().doInBackground();
 	}
 
-	public static Cursor getTasks() {
-		return new GetTasks().doInBackground();
+	public static Cursor getTasks(int numOfDays) {
+		return new GetTasks(numOfDays).doInBackground();
 	}
 
 
@@ -73,11 +79,24 @@ public class Database {
 	}
 
 	private final static class GetTasks extends AsyncTask<Void, Void, Cursor> {
+		private int numOfDays;
+
+		GetTasks(int numOfDays) {
+			this.numOfDays = numOfDays;
+		}
+
 		@Override
 		protected Cursor doInBackground(Void... voids) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTimeInMillis(System.currentTimeMillis());
+			calendar.add(Calendar.DAY_OF_MONTH, -numOfDays);
+
+			// The time range to use in the query in milliseconds
+			long timeRange = calendar.getTimeInMillis();
+
 			return databaseHelper
 					.getReadableDatabase()
-					.rawQuery("SELECT * FROM task", null);
+					.rawQuery("SELECT * FROM task WHERE date > " + timeRange, null);
 		}
 	}
 

@@ -472,16 +472,13 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			String taskName = et_taskName.getText().toString().length() != 0
 					? et_taskName.getText().toString()
 					: getResources().getString(R.string.task_default_name);
-			int taskCompleted = totalSecondsLeft == 0
-					? 1
-					: 0;
 
 			ContentValues contentValues = new ContentValues();
 			contentValues.put(database.getTaskNameColumnName(), taskName);
 			contentValues.put(database.getTaskLengthColumnName(), taskSecondsCompleted);
-			contentValues.put(database.getTaskCompletedColumnName(), taskCompleted);
+			contentValues.put(database.getTaskDateColumnName(), System.currentTimeMillis());
 
-			Database.insert(contentValues);
+			Database.addTask(contentValues);
 		}
 
 		// Do the settings update if such is pending

@@ -11,13 +11,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "pomodoro";
-	private static final int SCHEMA = 2;
+	private static final int SCHEMA = 3;
 
 	// The task table name and its columns
 	private static final String TASK_TABLE = "task";
 	private static final String TASK_NAME = "name";
 	private static final String TASK_LENGTH = "length";
-	private static final String TASK_COMPLETED = "completed";
+	private static final String TASK_DATE = "date";
 
 	// The settings table name and its columns
 	private static final String SETTINGS_TABLE = "settings";
@@ -51,7 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		sqLiteDatabase.execSQL("CREATE TABLE task (" +
 				"name 					TEXT," +
 				"length 				INTEGER NOT NULL," +
-				"completed 				INTEGER NOT NULL)");
+				"date					LONG NOT NULL)");
 
 		sqLiteDatabase.execSQL("CREATE TABLE settings (" +
 				"task_length 			INTEGER NOT NULL," +
@@ -63,7 +63,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				"keep_screen 			INTEGER NOT NULL," +
 				"dis_vibration_sound 	INTEGER NOT NULL," +
 				"dis_wifi 				INTEGER NOT NULL)");
-
 
 		// Set the default values
 		ContentValues contentValues = new ContentValues();
@@ -108,6 +107,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		contentValues.put(SETTINGS_DISABLE_VIBR_SOUND, DEFAULT_DISABLE_VIBR_SOUND);
 		contentValues.put(SETTINGS_DISABLE_WIFI, DEFAULT_DISABLE_WIFI);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
+
+		sqLiteDatabase.execSQL("DROP TABLE IF EXISTS task");
+		sqLiteDatabase.execSQL("CREATE TABLE task (" +
+				"name 					STRING NOT NULL," +
+				"length 				INTEGER NOT NULL," +
+				"date					INTEGER NOT NULL)");
+
 	}
 
 
@@ -120,8 +126,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public String getTaskLengthColumnName() {
 		return TASK_LENGTH;
 	}
-	public String getTaskCompletedColumnName() {
-		return TASK_COMPLETED;
+	public String getTaskDateColumnName() {
+		return TASK_DATE;
 	}
 
 	public String getSettingsTableName() {
