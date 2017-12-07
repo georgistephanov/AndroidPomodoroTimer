@@ -16,16 +16,11 @@ package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
-import android.media.MediaPlayer;
-import android.os.Vibrator;
-import android.support.v4.app.NotificationCompat;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
@@ -45,6 +40,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	// Database helper instance
 	DatabaseHelper database;
 
+	// Notifications class instance
+	Notifications notificator;
+
 	// The length of the task and the break in milliseconds
 	private int taskLength;
 	private int shortBreakLength;
@@ -54,9 +52,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 	// The state of the current timer in seconds
 	private int totalSecondsLeft;
-
-	// Main notification channel id
-	private static final String MAIN_NOTIFICATION_CHANNEL = "PomodoroActivity";
 
 	private Timer timer;
 	private boolean isTimerRunning = false;
@@ -102,6 +97,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Get the database helper instance
 		database = Database.getInstance(this);
 
+		// Create a notifications class instance
+		notificator = new Notifications(this);
+		// Get the notifications settings from the database
+		updateNotificationsSettings();
+
 		// Get the task and break lengths from the database
 		updateTimeFromSettings();
 	}
@@ -119,6 +119,10 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		} else {
 			settingsUpdatePending = true;
 		}
+
+		// Update the notification settings
+		updateNotificationsSettings();
+
 		super.onResume();
 	}
 
@@ -129,6 +133,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				return false;
 			case R.id.menu_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			case R.id.menu_about:
+				startActivity(new Intent(this, AboutActivity.class));
 				return true;
 			default:
 				return false;
@@ -310,7 +317,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			if (longBreakAfter == 0) {
 				longBreakAfter = Database.getInstance(this).getDefaultLongBreakAfter();
 			}
-
 		} else {
 			throw new RuntimeException("Database failed while getting the settings.");
 		}
@@ -318,6 +324,24 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		totalSecondsLeft = taskLength / 1000;
 
 		updateTime();
+	}
+
+	/**
+	 * Gets the current/new notification settings from the database and updates the notification
+	 * object.
+	 */
+	private void updateNotificationsSettings() {
+		Cursor cursor = Database.getSettings();
+
+		if (cursor.moveToNext()) {
+			// Update the notification settings
+			boolean vibrate = cursor.getInt(4) != 0;
+			boolean playSound = cursor.getInt(5) != 0;
+			notificator.setVibrate(vibrate);
+			notificator.setPlaySound(playSound);
+		} else {
+			throw new RuntimeException("Database failed while getting the settings.");
+		}
 	}
 
 	/**
@@ -392,8 +416,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		// If true -> the timer has ended uninterrupted
 		if (notification) {
-			playTimerEndNotification();
-			showStatusBarNotification(isBreak);
+			notificator.playTimerEndNotification();
+			notificator.showStatusBarNotification(isBreak);
 		}
 
 		// Restores the colours if it has been a break
@@ -401,54 +425,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			isBreak = false;
 			restoreColors();
 		}
-	}
-
-	/**
-	 * Plays the melody and vibration pattern.
-	 */
-	private void playTimerEndNotification() {
-		MediaPlayer mp = MediaPlayer.create(this, R.raw.end_sound);
-		mp.start();
-
-		// Vibrate upon the end of the task/break
-		Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-		long[] vibrationPattern = {0, 300, 100, 800};
-		vibrator.vibrate(vibrationPattern, -1);
-	}
-
-	/**
-	 * Creates and displays a notification in the status bar with the default notification
-	 * title and text. Creates and bounds an intent to the notification so that when it is
-	 * clicked the app will be put on top.
-	 */
-	private void showStatusBarNotification(boolean wasBreak) {
-		// Builds the notification
-		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, MAIN_NOTIFICATION_CHANNEL);
-		notificationBuilder
-				.setAutoCancel(true)
-				.setSmallIcon(R.mipmap.ic_launcher_round);
-
-		if ( wasBreak ) {
-			notificationBuilder
-					.setContentTitle(getResources().getString(R.string.notification_break_title))
-					.setContentText(getResources().getString(R.string.notification_break_text));
-		} else {
-			notificationBuilder
-				.setContentTitle(getResources().getString(R.string.notification_task_title))
-				.setContentText(getResources().getString(R.string.notification_task_text));
-		}
-
-		// Creates an intent to this class
-		Intent notificationIntent = new Intent(this, MainActivity.class);
-		// Stacks the activity as the only activity open of the app even if it was open from another activity
-		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-		// Bounds the intent which to execute when the notification is clicked to the notification
-		PendingIntent intent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		notificationBuilder.setContentIntent(intent);
-
-		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.notify(0, notificationBuilder.build());
 	}
 
 	/**
