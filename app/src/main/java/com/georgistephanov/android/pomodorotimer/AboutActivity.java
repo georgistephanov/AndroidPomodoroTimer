@@ -1,5 +1,7 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.ListActivity;
 import android.content.Context;
 import android.os.Bundle;
@@ -10,6 +12,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import de.psdev.licensesdialog.LicensesDialog;
+import de.psdev.licensesdialog.licenses.ApacheSoftwareLicense20;
+import de.psdev.licensesdialog.licenses.CreativeCommonsAttribution30Unported;
+import de.psdev.licensesdialog.licenses.License;
+import de.psdev.licensesdialog.model.Notice;
+import de.psdev.licensesdialog.model.Notices;
 
 /**
  * Created by Georgi on 07-Dec-17.
@@ -28,6 +37,7 @@ public class AboutActivity extends ListActivity {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_about);
+		setTitle(getResources().getString(R.string.menu_about));
 
 		// Populate the list
 		setListAdapter(new CustomAdapter(this));
@@ -36,6 +46,40 @@ public class AboutActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
+
+		if (aboutNames[position].equals(aboutNames[1])) {
+
+			CreditsFragment fragment = new CreditsFragment();
+			fragment.setContext(this);
+			Dialog dialog = fragment.onCreateDialog(null);
+			dialog.show();
+
+		} else if (aboutNames[position].equals(aboutNames[2])) {
+			final Notices notices = new Notices();
+			final License apacheLicense = new ApacheSoftwareLicense20();
+			final License ccLicense = new CreativeCommonsAttribution30Unported();
+
+			notices.addNotice(new Notice(
+				"Notification sounds",
+				"https://notificationsounds.com/",
+				"Licensed under Creative Commons 4.0",
+				ccLicense
+			));
+
+			notices.addNotice(new Notice(
+					"LicensesDialog",
+					"http://psdev.de",
+					"Copyright 2013 Philip Schiffer <admin@psdev.de>",
+					apacheLicense
+			));
+
+
+			new LicensesDialog.Builder(AboutActivity.this)
+					.setNotices(notices)
+					.setTitle("Open Source Licenses")
+					.build()
+					.show();
+		}
 	}
 
 	private class CustomAdapter extends ArrayAdapter<String> {

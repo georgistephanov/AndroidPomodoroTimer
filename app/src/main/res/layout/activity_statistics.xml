@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="@color/lightGray"
+	tools:context="com.georgistephanov.android.pomodorotimer.StatisticsActivity">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:background="@color/white"
+			android:padding="15dp"
+			android:text="@string/last_month_statistics"
+			android:textSize="@dimen/et_textSize"
+			android:translationZ="5dp" />
+
+		<com.jjoe64.graphview.GraphView
+			android:layout_width="match_parent"
+			android:layout_height="300dip"
+			android:layout_marginTop="10dp"
+			android:layout_marginLeft="20dp"
+			android:layout_marginRight="20dp"
+			android:id="@+id/graph"
+			android:background="@color/white"/>
+
+	</LinearLayout>
+
+</LinearLayout>

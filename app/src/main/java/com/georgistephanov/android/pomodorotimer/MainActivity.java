@@ -137,7 +137,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	public boolean onMenuItemClick(MenuItem menuItem) {
 		switch(menuItem.getItemId()) {
 			case R.id.menu_statistics:
-				return false;
+				startActivity(new Intent(this, StatisticsActivity.class));
+				return true;
 			case R.id.menu_settings:
 				startActivity(new Intent(this, SettingsActivity.class));
 				return true;
