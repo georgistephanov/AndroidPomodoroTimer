@@ -1,28 +1,40 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lecho.lib.hellocharts.gesture.ZoomType;
+import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
+import lecho.lib.hellocharts.model.PieChartData;
 import lecho.lib.hellocharts.model.PointValue;
+import lecho.lib.hellocharts.model.SliceValue;
 import lecho.lib.hellocharts.model.Viewport;
+import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.LineChartView;
+import lecho.lib.hellocharts.view.PieChartView;
 
 public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
 
@@ -32,6 +44,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	TextView tv_lastDaysTotalLabel;
 	TextView tv_lastDaysAverage;
 	TextView tv_lastDaysAverageLabel;
+	LinearLayout bulletListLayout;
 
 
 	enum Period {
@@ -39,6 +52,8 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	Period defaultPeriod = Period.WEEK;
+
+	int colourNumber = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +67,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		tv_lastDaysTotalLabel = findViewById(R.id.last_days_total_label);
 		tv_lastDaysAverage = findViewById(R.id.last_days_avg);
 		tv_lastDaysAverageLabel = findViewById(R.id.last_days_avg_label);
+		bulletListLayout = findViewById(R.id.bullet_list_layout);
 
 		// Set the default period
 		setPeriod(defaultPeriod);
@@ -89,6 +105,18 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	 * @param period to generate data for
 	 */
 	private void generateData(Period period) {
+		// =========================================
+		// Line Chart
+		// =========================================
+		makeLineGraph(period);
+
+		// =========================================
+		// Pie Chart
+		// =========================================
+		makePieChart(period);
+	}
+
+	private void makeLineGraph(Period period) {
 		// Set the number of days that is going to be displayed info for
 		int numOfDays;
 
@@ -101,7 +129,6 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		} else {
 			throw new RuntimeException("No periods except week and month have been configured");
 		}
-
 
 		// An array in which the work duration of the particular day will be kept
 		int[] daysWorkDuration = new int[numOfDays];
@@ -181,7 +208,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(3));
 
 		// Get the chart view from the layout and set the line chart data and its properties
-		LineChartView chartTop = findViewById(R.id.chart);
+		LineChartView chartTop = findViewById(R.id.lineChart);
 		chartTop.setLineChartData(lineData);
 		chartTop.setValueSelectionEnabled(true); // Show points label when its clicked
 		chartTop.setZoomType(ZoomType.HORIZONTAL);
@@ -232,6 +259,154 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	/**
+	 * Gets the information needed for populating the pie chart graph and sets its attributes
+	 * and displays it.
+	 */
+	private void makePieChart(Period period) {
+		// Set the number of days that is going to be displayed info for
+		int numOfDays;
+
+		if (period == Period.WEEK) {
+			tv_period.setText(getResources().getString(R.string.menu_week));
+			numOfDays = 7;
+		} else if (period == Period.MONTH) {
+			tv_period.setText(getResources().getString(R.string.menu_month));
+			numOfDays = 30;
+		} else {
+			throw new RuntimeException("No periods except week and month have been configured");
+		}
+
+		for (int i = 0; i < 4; i++) {
+			SliceValue sliceValues = new SliceValue((float) Math.random() * 30 + 15, ChartUtils.pickColor());
+
+		}
+
+		// Get the data from the database and populate the list of slice values
+		List<SliceValue> sliceValues = new ArrayList<>();
+		{
+			Cursor cursor = Database.getTasks(numOfDays);
+			Map<String, Integer> tasks = new HashMap<>();
+
+			while (cursor.moveToNext()) {
+				String taskName = cursor.getString(0);
+				int taskDuration = cursor.getInt(1) / 60;
+
+				if ( !tasks.containsKey(taskName) ) {
+					tasks.put(taskName, taskDuration);
+				} else {
+					tasks.replace(taskName, tasks.get(taskName), tasks.get(taskName) + taskDuration);
+				}
+			}
+
+			for (Map.Entry<String, Integer> e : tasks.entrySet()) {
+				if (colourNumber < 8) {
+					sliceValues.add(
+							new SliceValue(e.getValue(), getNextColor())
+									.setLabel(e.getKey())
+					);
+				} else {
+					sliceValues.add(
+							new SliceValue(e.getValue(), ChartUtils.pickColor())
+									.setLabel(e.getKey())
+					);
+				}
+			}
+
+			if (tasks.isEmpty()) {
+				makeDefaultPieChart();
+				return;
+			}
+		}
+
+		PieChartData pieChartData = new PieChartData(sliceValues);
+		pieChartData.setHasLabels(false);
+		pieChartData.setHasCenterCircle(true);
+		pieChartData.setCenterText1FontSize((int) getResources().getDimension(R.dimen.pie_chart_textSize));
+
+		PieChartView pieChartView = findViewById(R.id.pieChart);
+		pieChartView.setPieChartData(pieChartData);
+		pieChartView.setChartRotationEnabled(false);
+		pieChartView.setOnValueTouchListener(new PieChartValueTouchListener(this));
+		pieChartView.setValueSelectionEnabled(true);
+
+		populateBulletList(sliceValues);
+	}
+
+	private void makeDefaultPieChart() {
+		List<SliceValue> sliceValues = new ArrayList<>();
+
+		sliceValues.add(
+				new SliceValue(1, getResources().getColor(R.color.colorPrimary, this.getTheme()))
+		);
+
+		PieChartData pieChartData = new PieChartData(sliceValues);
+		pieChartData.setCenterText1(getResources().getString(R.string.pie_chart_empty_label));
+		pieChartData.setCenterText1FontSize((int) getResources().getDimension(R.dimen.pie_chart_textSize));
+
+		PieChartView pieChartView = findViewById(R.id.pieChart);
+		pieChartView.setPieChartData(pieChartData);
+
+		// Hide the bullet list layout
+		bulletListLayout.setVisibility(View.GONE);
+	}
+
+	private void populateBulletList(List<SliceValue> sliceValues) {
+		for (SliceValue sv : sliceValues) {
+			// Create the row layout
+			LinearLayout row = new LinearLayout(this);
+			{
+				row.setLayoutParams(new LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.WRAP_CONTENT
+				));
+				row.setOrientation(LinearLayout.HORIZONTAL);
+			}
+
+			// Create a new view for the bullet
+			Button bullet = new Button(this);
+			{
+				int size = (int) (24 * getResources().getDisplayMetrics().density);
+				int margin10 = (int) (10 * getResources().getDisplayMetrics().density);
+				int margin5 = (int) (5 * getResources().getDisplayMetrics().density);
+				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+						size, size
+				);
+				params.setMargins(
+						margin10,
+						margin5,
+						margin10,
+						margin5
+				);
+
+				bullet.setLayoutParams(params);
+
+				bullet.setBackground(getResources().getDrawable(R.drawable.bullet, this.getTheme()));
+				bullet.getBackground().setColorFilter(sv.getColor(), PorterDuff.Mode.SRC_ATOP);
+				bullet.setClickable(false);
+			}
+
+			// Create the text view
+			TextView label = new TextView(this);
+			{
+				label.setLayoutParams(new LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.WRAP_CONTENT,
+						LinearLayout.LayoutParams.WRAP_CONTENT
+				));
+				label.setTextSize(
+					getResources().getDisplayMetrics().scaledDensity * 7
+				);
+				label.setText(String.valueOf(sv.getLabelAsChars()));
+				label.setTextColor(getResources().getColor(R.color.gray, this.getTheme()));
+			}
+
+			// Add the bullet and the text to the row and add the row to the layout
+			row.addView(bullet);
+			row.addView(label);
+			bulletListLayout.addView(row);
+		}
+	}
+
+	/**
 	 * Sets the correct values to the textviews which are located under the graph. They
 	 * represent the total amount of timed worked for the period and the average time worked
 	 * each day of that period.
@@ -246,6 +421,11 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		tv_lastDaysAverageLabel.setText(res.getString(R.string.plain_string, formatTime(totalWorkTime / numOfDays)));
 	}
 
+	/**
+	 * Finds and returns the day number of the month from a given timestamp
+	 * @param timestamp to find the day of the month
+	 * @return the day of the month
+	 */
 	private int getDayNumberFromTimestamp(long timestamp) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(timestamp);
@@ -253,6 +433,11 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		return calendar.get(Calendar.DAY_OF_MONTH);
 	}
 
+	/**
+	 * Formats a timestamp to a day and month, which are used for the X axis of the Line graph.
+	 * @param timestamp to be formatted
+	 * @return day and month in the format dd/mm
+	 */
 	private String getXAxisDateLabel(long timestamp) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(timestamp);
@@ -260,6 +445,11 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		return calendar.get(Calendar.DAY_OF_MONTH) + "/" + (calendar.get(Calendar.MONTH) + 1);
 	}
 
+	/**
+	 * Formats a time from minutes to the format 1h 20m
+	 * @param minutes the minutes to format
+	 * @return the formatted time
+	 */
 	private String formatTime(int minutes) {
 		StringBuilder formattedTime = new StringBuilder();
 		formattedTime.append(minutes / 60);
@@ -268,5 +458,33 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		formattedTime.append("m");
 
 		return formattedTime.toString();
+	}
+
+	/**
+	 * Returns the next colour id for the pie chart
+	 * @return colour
+	 */
+	private int getNextColor() {
+		return getResources().getIntArray(R.array.pieChart)[colourNumber++];
+	}
+
+	private class PieChartValueTouchListener implements PieChartOnValueSelectListener {
+		PieChartView pieChartView;
+		PieChartData pieChartData;
+
+		PieChartValueTouchListener(Context context) {
+			pieChartView = (PieChartView) ((Activity) context).findViewById(R.id.pieChart);
+			pieChartData = pieChartView.getPieChartData();
+		}
+
+		@Override
+		public void onValueSelected(int arcIndex, SliceValue value) {
+			pieChartData.setCenterText1(formatTime((int) value.getValue()));
+		}
+
+		@Override
+		public void onValueDeselected() {
+			pieChartData.setCenterText1("");
+		}
 	}
 }

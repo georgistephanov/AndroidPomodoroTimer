@@ -242,6 +242,16 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	}
 
 	/**
+	 * Clear edit text focus on click on the timer
+	 * @param view the timer
+	 */
+	public void onTimerViewClick(View view) {
+		if (et_taskName.hasFocus()) {
+			et_taskName.clearFocus();
+		}
+	}
+
+	/**
 	 * Inflates and shows the popup menu.
 	 * @param view whe popup menu image button
 	 */

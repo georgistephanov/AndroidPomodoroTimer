@@ -35,10 +35,12 @@
 	<string name="menu_week">Last week</string>
 	<string name="menu_month">Last month</string>
 	<string name="working_time_label">Working time</string>
+	<string name="task_distribution_label">Task distribution</string>
 	<string name="last_month_statistics">Last month</string>
 	<string name="stats">%d days</string>
 	<string name="last_days_total">Last %d days total</string>
 	<string name="last_days_avg">Last %d days average</string>
+	<string name="pie_chart_empty_label">No tasks</string>
 
 	<!-- Notifications -->
 	<string name="notification_task_title">Work session finished</string>

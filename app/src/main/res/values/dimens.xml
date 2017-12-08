@@ -14,4 +14,5 @@
 	<dimen name="setting_name_textSize">17sp</dimen>
 	<dimen name="statistics_label_textSize">16sp</dimen>
 	<dimen name="statistics_graphName_textSize">20sp</dimen>
+	<dimen name="pie_chart_textSize">7sp</dimen>
 </resources>

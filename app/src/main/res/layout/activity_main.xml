@@ -50,7 +50,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:paddingLeft="@dimen/et_paddingLeft"
-			android:ems="10"
+			android:ems="8"
+			android:maxLength="15"
 			android:hint="@string/et_placeholder"
 			android:fontFamily="sans-serif-light"
 			android:inputType="textPersonName"
@@ -80,6 +81,7 @@
 		android:max="3600"
 		android:progress="3600"
 		android:progressDrawable="@drawable/circular_progress_bar"
+		android:onClick="onTimerViewClick"
 
 		app:layout_constraintBottom_toTopOf="@+id/start_button"
 		app:layout_constraintEnd_toEndOf="parent"
