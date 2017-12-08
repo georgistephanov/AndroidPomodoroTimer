@@ -96,7 +96,7 @@ public class Database {
 
 			return databaseHelper
 					.getReadableDatabase()
-					.rawQuery("SELECT * FROM task WHERE date > " + timeRange, null);
+					.rawQuery("SELECT * FROM task WHERE date > " + timeRange + " ORDER BY date DESC", null);
 		}
 	}
 

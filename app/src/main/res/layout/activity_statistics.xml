@@ -14,14 +14,33 @@
 		android:layout_height="wrap_content"
 		android:orientation="vertical">
 
-		<TextView
+		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:background="@color/white"
-			android:padding="15dp"
-			android:text="@string/last_month_statistics"
-			android:textSize="@dimen/et_textSize"
-			android:translationZ="5dp" />
+			android:orientation="horizontal"
+			android:background="@color/white">
+
+			<TextView
+				android:id="@+id/period"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:paddingLeft="15dp"
+				android:paddingTop="15dp"
+				android:paddingBottom="15dp"
+				android:paddingRight="5dp"
+				android:text="@string/last_month_statistics"
+				android:textSize="@dimen/et_textSize"/>
+
+			<ImageButton
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:background="@drawable/popup_menu_button"
+				android:src="@drawable/arrow_down_30dp"
+				android:tint="@color/gray"
+				android:onClick="onArrowDownClick"/>
+
+		</LinearLayout>
 
 		<LinearLayout
 			android:layout_width="match_parent"
@@ -31,13 +50,13 @@
 			android:layout_marginTop="10dp"
 			android:layout_marginLeft="12dp"
 			android:layout_marginRight="12dp"
-			android:translationZ="5dp">
+			android:translationZ="6dp">
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:textSize="20sp"
-				android:text="Working time"
+				android:textSize="@dimen/statistics_graphName_textSize"
+				android:text="@string/working_time_label"
 				android:padding="20dp"/>
 
 			<lecho.lib.hellocharts.view.LineChartView
@@ -46,7 +65,7 @@
 				android:layout_height="300dp"
 				android:layout_marginLeft="20dp"
 				android:layout_marginRight="20dp"
-				android:layout_marginBottom="10dp"/>
+				android:layout_marginBottom="10dp" />
 
 		</LinearLayout>
 
@@ -56,32 +75,64 @@
 			android:background="@color/white"
 			android:layout_marginLeft="12dp"
 			android:layout_marginRight="12dp"
-			android:translationZ="4dp"
-			android:orientation="vertical">
+			android:orientation="vertical"
+			android:translationZ="4dp">
 
-			<TextView
+			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:textSize="16sp"
+				android:orientation="horizontal"
 				android:paddingTop="20dp"
 				android:paddingLeft="20dp"
-				android:paddingRight="20dp"
-				android:background="@color/white"
-				android:text="Last 7 days"/>
+				android:paddingRight="20dp">
 
-			<TextView
+				<TextView
+					android:id="@+id/last_days_total"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:textSize="@dimen/statistics_label_textSize"
+					android:text="@string/last_days_total"/>
+
+				<TextView
+					android:id="@+id/last_days_total_label"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:gravity="end"
+					android:textSize="@dimen/statistics_label_textSize"
+					android:fontFamily="sans-serif"
+					android:textStyle="bold"/>
+
+			</LinearLayout>
+
+
+			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:textSize="16sp"
+				android:orientation="horizontal"
 				android:paddingTop="10dp"
 				android:paddingLeft="20dp"
 				android:paddingRight="20dp"
-				android:paddingBottom="20dp"
-				android:background="@color/white"
-				android:text="Last 7 days"/>
+				android:paddingBottom="20dp">
+
+				<TextView
+					android:id="@+id/last_days_avg"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:textSize="@dimen/statistics_label_textSize"
+					android:text="@string/last_days_avg"/>
+
+				<TextView
+					android:id="@+id/last_days_avg_label"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:gravity="end"
+					android:textSize="@dimen/statistics_label_textSize"
+					android:fontFamily="sans-serif"
+					android:textStyle="bold" />
+
+			</LinearLayout>
 
 		</LinearLayout>
-
 
 	</LinearLayout>
 

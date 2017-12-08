@@ -250,7 +250,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		PopupMenu popupMenu = new PopupMenu(popupContext, view);
 
 		popupMenu.setOnMenuItemClickListener(this);
-		popupMenu.inflate(R.menu.actions);
+		popupMenu.inflate(R.menu.main_popup_menu);
 		popupMenu.show();
 	}
 

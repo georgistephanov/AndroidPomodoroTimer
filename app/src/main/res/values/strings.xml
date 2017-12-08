@@ -1,51 +1,53 @@
 <resources>
 	<string name="app_name">Pomodoro Timer</string>
 
+	<!-- Main activity -->
 	<string name="b_break">Take a break</string>
 	<string name="b_continue">Continue</string>
-
 	<string name="et_placeholder">Enter task name</string>
 	<string name="task_default_name">Unspecified task</string>
-
-	<string name="notification_task_title">Pomodoro task finished</string>
-	<string name="notification_task_text">You have finished your current task.</string>
-	<string name="notification_break_title">Time is up...</string>
-	<string name="notification_break_text">Your break has finished. It\'s time for another task.</string>
 	<string name="title_activity_settings">Settings</string>
-
 	<string name="menu_statistics">Statistics</string>
 	<string name="menu_settings">Settings</string>
 	<string name="menu_about">About</string>
 
+	<!-- Settings activity -->
 	<string name="settings_general_separator">General</string>
 	<string name="settings_notifications_separator">Notifications on session end</string>
 	<string name="settings_during_session_separator">During work session</string>
-
 	<string name="settings_task_duration">Session duration</string>
 	<string name="settings_short_break_duration">Short break duration</string>
 	<string name="settings_long_break_duration">Long break duration</string>
 	<string name="settings_long_break_after">Sessions before a long break</string>
 	<string name="settings_duration_label_minutes">%d minutes</string>
 	<string name="settings_duration_label_sessions">%d sessions</string>
-
 	<string name="settings_notification_vibrate">Vibrate when session ends</string>
 	<string name="settings_notification_play_sound">Play sound when session ends</string>
-
 	<string name="settings_during_keep_screen">Keep the screen on</string>
 	<string name="settings_during_disable_sound_vibration">Disable sounds and vibration</string>
 	<string name="settings_during_disable_wifi">Disable Wi-Fi</string>
 
+	<!-- About activity -->
 	<string name="credits_title">Credits</string>
-	<string name="credits_body">
-			Creator: Georgi Stephanov
-			&lt;br /&gt;
-			&lt;br /&gt;
-			Inspired by: ClearFocus
-	</string>
-	<string name="cancel">Cancel</string>
+	<string name="credits_body">Creator: Georgi Stephanov&lt;br /&gt;&lt;br /&gt;Inspired by: ClearFocus</string>
 
+	<!-- Statistics activity -->
+	<string name="menu_week">Last week</string>
+	<string name="menu_month">Last month</string>
+	<string name="working_time_label">Working time</string>
 	<string name="last_month_statistics">Last month</string>
 	<string name="stats">%d days</string>
+	<string name="last_days_total">Last %d days total</string>
+	<string name="last_days_avg">Last %d days average</string>
 
+	<!-- Notifications -->
+	<string name="notification_task_title">Work session finished</string>
+	<string name="notification_task_text">You have finished your current session.</string>
+	<string name="notification_break_title">Time is up...</string>
+	<string name="notification_break_text">Your break is over. It\'s time for another task.</string>
+
+	<!-- General -->
 	<string name="plain_string">%s</string>
+	<string name="cancel">Cancel</string>
+
 </resources>
