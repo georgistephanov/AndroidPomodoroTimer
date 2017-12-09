@@ -1,35 +1,37 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Created by Georgi on 09-Dec-17.
  */
 
-public class TimerService extends Service {
+public class TimerService extends IntentService {
 
-	@Nullable
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
+	private int taskDuration;
+
+	public TimerService() {
+		super("TimerService");
 	}
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+	protected void onHandleIntent(@Nullable Intent intent) {
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	@Override
+	public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+		Toast.makeText(this, "Service starting", Toast.LENGTH_SHORT).show();
 		return super.onStartCommand(intent, flags, startId);
-	}
-
-	@Override
-	public void onTaskRemoved(Intent rootIntent) {
-		super.onTaskRemoved(rootIntent);
-
-		Log.d("Just now", "It was closed");
-
-		// Destroy the service
-		stopSelf();
 	}
 }

@@ -16,7 +16,10 @@ package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +28,7 @@ import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
@@ -82,6 +86,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	private int deviceDefaultRingerMode;
 	private boolean deviceDefaultWifiState;
 
+	TimerService timerService;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -116,6 +122,20 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		// Get the task and break lengths from the database
 		updateTimeFromSettings();
+
+		timerService = new TimerService();
+		Intent notificationIntent = new Intent(this, TimerService.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+		Notification notification = new NotificationCompat.Builder(this, "Channel")
+				.setContentTitle("Title")
+				.setContentText("Content text")
+				.setSmallIcon(R.drawable.ic_launcher_foreground)
+				.setContentIntent(pendingIntent)
+				.setTicker("Ticker text")
+				.build();
+
+		startService(notificationIntent);
 	}
 
 	@Override
