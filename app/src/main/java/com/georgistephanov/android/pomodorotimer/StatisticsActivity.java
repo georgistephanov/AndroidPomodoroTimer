@@ -10,7 +10,10 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -45,7 +48,6 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	TextView tv_lastDaysAverage;
 	TextView tv_lastDaysAverageLabel;
 	LinearLayout bulletListLayout;
-
 
 	enum Period {
 		WEEK, MONTH
@@ -196,22 +198,23 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		// Create the line object and set its properties
 		Line line = new Line(values)
 				.setColor(getResources().getColor(R.color.colorPrimary, this.getTheme()))
-				.setHasLabelsOnlyForSelected(true);
+				.setHasLabelsOnlyForSelected(true)
+				.setCubic(true);
 
 		// Create the list of lines and add the line we're going to use
 		List<Line> lines = new ArrayList<>();
 		lines.add(line);
 
 		// Create the line chart data object
-		LineChartData lineData = new LineChartData(lines);
-		lineData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
-		lineData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(3));
+		LineChartData lineChartData = new LineChartData(lines);
+		lineChartData.setAxisXBottom(new Axis(axisValues).setHasLines(true));
+		lineChartData.setAxisYLeft(new Axis().setHasLines(true).setMaxLabelChars(3));
 
 		// Get the chart view from the layout and set the line chart data and its properties
-		LineChartView chartTop = findViewById(R.id.lineChart);
-		chartTop.setLineChartData(lineData);
-		chartTop.setValueSelectionEnabled(true); // Show points label when its clicked
-		chartTop.setZoomType(ZoomType.HORIZONTAL);
+		LineChartView lineChartView = findViewById(R.id.lineChart);
+		lineChartView.setLineChartData(lineChartData);
+		lineChartView.setValueSelectionEnabled(true); // Show points label when its clicked
+		lineChartView.setZoomEnabled(false);
 
 		// Set the Y axis max value to the maximum time worked for a day of the days that are being displayed
 		int yAxisMaxValue = -1;
@@ -233,7 +236,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 				yAxisMaxValue = 60;
 			} else {
 				// Set the max Y axis value to a little bit more than the max value
-				yAxisMaxValue += 10;
+				//yAxisMaxValue += 10;
 			}
 
 			// Set the X axis max value depending on the period that is being displayed
@@ -249,11 +252,11 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 				throw new RuntimeException("No periods except week and month have been configured");
 			}
 
-			chartTop.setCurrentViewport(
-					new Viewport(numOfDays - xAxisMaxValue - 1, yAxisMaxValue, numOfDays, 0)
+			lineChartView.setMaximumViewport(
+					new Viewport(0, yAxisMaxValue, numOfDays - 1, -2)
 			);
-			chartTop.setMaximumViewport(
-					new Viewport(0, yAxisMaxValue, numOfDays - 1, 0)
+			lineChartView.setCurrentViewport(
+					new Viewport(numOfDays - xAxisMaxValue - 1, yAxisMaxValue, numOfDays, -2)
 			);
 		}
 	}
@@ -265,6 +268,9 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	private void makePieChart(Period period) {
 		// Set the number of days that is going to be displayed info for
 		int numOfDays;
+
+		// Restore the colour number
+		colourNumber = 0;
 
 		if (period == Period.WEEK) {
 			tv_period.setText(getResources().getString(R.string.menu_week));
@@ -319,7 +325,8 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		}
 
 		PieChartData pieChartData = new PieChartData(sliceValues);
-		pieChartData.setHasLabels(false);
+		pieChartData.setHasLabels(true);
+		pieChartData.setHasLabelsOnlyForSelected(true);
 		pieChartData.setHasCenterCircle(true);
 		pieChartData.setCenterText1FontSize((int) getResources().getDimension(R.dimen.pie_chart_textSize));
 
@@ -328,6 +335,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		pieChartView.setChartRotationEnabled(false);
 		pieChartView.setOnValueTouchListener(new PieChartValueTouchListener(this));
 		pieChartView.setValueSelectionEnabled(true);
+		pieChartView.setChartRotation(-90, true);
 
 		populateBulletList(sliceValues);
 	}
@@ -351,6 +359,9 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	private void populateBulletList(List<SliceValue> sliceValues) {
+		// Remove previous bullet points
+		bulletListLayout.removeAllViews();
+
 		for (SliceValue sv : sliceValues) {
 			// Create the row layout
 			LinearLayout row = new LinearLayout(this);
@@ -400,9 +411,9 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 			}
 
 			// Add the bullet and the text to the row and add the row to the layout
+			bulletListLayout.addView(row);
 			row.addView(bullet);
 			row.addView(label);
-			bulletListLayout.addView(row);
 		}
 	}
 

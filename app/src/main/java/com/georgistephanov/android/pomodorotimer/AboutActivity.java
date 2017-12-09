@@ -73,6 +73,13 @@ public class AboutActivity extends ListActivity {
 					apacheLicense
 			));
 
+			notices.addNotice(new Notice(
+				"HelloCharts",
+				"https://github.com/lecho/hellocharts-android",
+				"Copyright 2014 Leszek Wach",
+				apacheLicense
+			));
+
 
 			new LicensesDialog.Builder(AboutActivity.this)
 					.setNotices(notices)
