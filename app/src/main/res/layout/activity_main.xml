@@ -56,7 +56,7 @@
 			android:fontFamily="sans-serif-light"
 			android:inputType="textPersonName"
 			android:textSize="@dimen/et_textSize"
-			android:textColor="@color/black"/>
+			android:textColor="?android:textColorPrimary"/>
 
 		<ImageButton
 			android:id="@+id/deleteTask"

@@ -485,19 +485,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		restoreSettingsOnEndOfSession();
 
 		// Write the task session to the database
-		if ( !isBreak ) {
-			int taskSecondsCompleted = (taskLength / 1000) - totalSecondsLeft;
-			String taskName = et_taskName.getText().toString().length() != 0
-					? et_taskName.getText().toString()
-					: getResources().getString(R.string.task_default_name);
-
-			ContentValues contentValues = new ContentValues();
-			contentValues.put(database.getTaskNameColumnName(), taskName);
-			contentValues.put(database.getTaskLengthColumnName(), taskSecondsCompleted);
-			contentValues.put(database.getTaskDateColumnName(), System.currentTimeMillis());
-
-			Database.addTask(contentValues);
-		}
+		writeTaskSessionToDatabase();
 
 		// Do the settings update if such is pending
 		if ( settingsUpdatePending ) {
@@ -546,6 +534,25 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			timer.cancel();
 			timer = null;
 			isTimerRunning = false;
+		}
+	}
+
+	/**
+	 * Writes the task session to the database for the current task if it is not a break
+	 */
+	private void writeTaskSessionToDatabase() {
+		if ( !isBreak ) {
+			int taskSecondsCompleted = (taskLength / 1000) - totalSecondsLeft;
+			String taskName = et_taskName.getText().toString().length() != 0
+					? et_taskName.getText().toString()
+					: getResources().getString(R.string.task_default_name);
+
+			ContentValues contentValues = new ContentValues();
+			contentValues.put(database.getTaskNameColumnName(), taskName);
+			contentValues.put(database.getTaskLengthColumnName(), taskSecondsCompleted);
+			contentValues.put(database.getTaskDateColumnName(), System.currentTimeMillis());
+
+			Database.addTask(contentValues);
 		}
 	}
 
@@ -640,9 +647,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		if (cursor.moveToNext()) {
 			boolean isDarkTheme = cursor.getInt(9) != 0;
-			int theme = getThemeId(this);
-			int appTheme = R.style.AppTheme;
-			int darkTheme = R.style.DarkTheme;
 
 			if (isDarkTheme && (getThemeId(this) == R.style.AppTheme)) {
 				Utils.changeTheme(this, Utils.THEME_DARK);

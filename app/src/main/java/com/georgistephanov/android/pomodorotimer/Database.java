@@ -42,6 +42,10 @@ public class Database {
 		new InsertTask().doInBackground(cv);
 	}
 
+	public static void addTaskAndCloseDatabase(ContentValues cv) {
+		new InsertTaskAndClose().doInBackground(cv);
+	}
+
 	/**
 	 * Updates the settings table with the ContentValues passed as a parameters.
 	 * @param cv the new settings to be written to the database
@@ -122,6 +126,21 @@ public class Database {
 					.insert(databaseHelper.getTaskTableName(), null, contentValues[0]);
 
 			return null;
+		}
+	}
+
+	private final static class InsertTaskAndClose extends AsyncTask<ContentValues, Void, Void> {
+		@Override
+		protected Void doInBackground(ContentValues... contentValues) {
+			databaseHelper.getWritableDatabase()
+					.insert(databaseHelper.getTaskTableName(), null, contentValues[0]);
+
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void aVoid) {
+			databaseHelper.close();
 		}
 	}
 }
