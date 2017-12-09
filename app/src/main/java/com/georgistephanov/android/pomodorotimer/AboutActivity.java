@@ -36,6 +36,7 @@ public class AboutActivity extends ListActivity {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Utils.onActivityCreateSetTheme(this);
 		setContentView(R.layout.activity_about);
 		setTitle(getResources().getString(R.string.menu_about));
 

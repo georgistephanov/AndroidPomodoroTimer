@@ -37,6 +37,7 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.lang.reflect.Method;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -84,7 +85,14 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Utils.onActivityCreateSetTheme(this);
 		setContentView(R.layout.activity_main);
+
+		// Get the database helper instance
+		database = Database.getInstance(this);
+
+		// Updates the app theme if it had been changed
+		//updateTheme();
 
 		getActionBar().hide();
 
@@ -100,9 +108,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		b_stop = findViewById(R.id.stop_button);
 		b_break = findViewById(R.id.takeBreak);
 		b_continue = findViewById(R.id.continueTask);
-
-		// Get the database helper instance
-		database = Database.getInstance(this);
 
 		// Create a notifications class instance
 		notificator = new Notifications(this);
@@ -127,8 +132,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			settingsUpdatePending = true;
 		}
 
+		// Update theme
+		updateTheme();
+
 		// Update the notification settings
-		updateNotificationsSettings();
+		//updateNotificationsSettings();
 
 		super.onResume();
 	}
@@ -625,6 +633,43 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				b_start.setVisibility(View.VISIBLE);
 			}
 		}
+	}
+
+	private void updateTheme() {
+		Cursor cursor = Database.getSettings();
+
+		if (cursor.moveToNext()) {
+			boolean isDarkTheme = cursor.getInt(9) != 0;
+			int theme = getThemeId(this);
+			int appTheme = R.style.AppTheme;
+			int darkTheme = R.style.DarkTheme;
+
+			if (isDarkTheme && (getThemeId(this) == R.style.AppTheme)) {
+				Utils.changeTheme(this, Utils.THEME_DARK);
+			} else if (!isDarkTheme && (getThemeId(this) == R.style.DarkTheme)) {
+				Utils.changeTheme(this, Utils.THEME_DEFAULT);
+			}
+		} else {
+			throw new RuntimeException("Could not get the settings from the database.");
+		}
+	}
+
+	/**
+	 * Get the current theme from the context. Its method getThemeResId is private,
+	 * however, thus we need a wrapper around it to get it.
+	 * @return the current theme id
+	 */
+	static int getThemeId(Context context) {
+		try {
+			Class<?> wrapper = Context.class;
+			Method method = wrapper.getMethod("getThemeResId");
+			method.setAccessible(true);
+			return (Integer) method.invoke(context);
+		}
+		catch (Exception e) {
+
+		}
+		return 0;
 	}
 
 	/**

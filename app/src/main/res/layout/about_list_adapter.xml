@@ -11,7 +11,7 @@
 		android:layout_height="wrap_content"
 		android:padding="15dp"
 		android:textSize="@dimen/separator_textSize"
-		android:textColor="@color/black"
+		android:textColor="?android:textColorPrimary"
 		android:fontFamily="sans-serif"/>
 
 	<TextView
@@ -21,7 +21,6 @@
 		android:paddingLeft="15dp"
 		android:paddingBottom="10dp"
 		android:textSize="@dimen/separator_textSize"
-		android:textColor="@color/black"
 		android:fontFamily="sans-serif-light"
 		android:visibility="gone"/>
 

@@ -3,6 +3,7 @@ package com.georgistephanov.android.pomodorotimer;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -16,6 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.lang.reflect.Method;
 
 public class SettingsActivity extends Activity {
 	private final int WRAP_CONTENT = LinearLayout.LayoutParams.WRAP_CONTENT;
@@ -41,6 +44,8 @@ public class SettingsActivity extends Activity {
 	CheckBox cb_disableWiFi;
 	CheckBox cb_keepScreenOn;
 
+	CheckBox cb_darkTheme;
+
 	/**
 	 * This is used to define the label name of the progress bar, as there are currently 4 settings
 	 * with progress bar -> 3
@@ -54,6 +59,7 @@ public class SettingsActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Utils.onActivityCreateSetTheme(this);
 		setContentView(R.layout.activity_settings);
 		setTitle(getResources().getString(R.string.menu_settings));
 
@@ -78,6 +84,7 @@ public class SettingsActivity extends Activity {
 			cv.put(db.getSettingsKeepScreen(), cb_keepScreenOn.isChecked() ? 1 : 0);
 			cv.put(db.getSettingsDisableVibrationSound(), cb_disableSoundVibration.isChecked() ? 1 : 0);
 			cv.put(db.getSettingsDisableWifi(), cb_disableWiFi.isChecked() ? 1 : 0);
+			cv.put(db.getSettingsDarkTheme(), cb_darkTheme.isChecked() ? 1 : 0);
 			Database.updateSettings(cv);
 
 			settingsChanged = false;
@@ -106,6 +113,7 @@ public class SettingsActivity extends Activity {
 			boolean keepScreenOn = cursor.getInt(6) != 0;
 			boolean disableVibrationSounds = cursor.getInt(7) != 0;
 			boolean disableWiFi = cursor.getInt(8) != 0;
+			boolean isDarkTheme = cursor.getInt(9) != 0;
 
 			// Generate the General settings group
 			{
@@ -158,6 +166,12 @@ public class SettingsActivity extends Activity {
 				cb_playSound = makeCheckBoxSetting(res.getString(R.string.settings_notification_play_sound), playSound);
 			}
 
+			// Generate Other settings group
+			{
+				addSeparator(res.getString(R.string.settings_other_separator));
+				cb_darkTheme = makeCheckBoxSetting(res.getString(R.string.settings_other_dark_theme), isDarkTheme);
+			}
+
 			// Set the change listeners to all views
 			{
 				sb_taskDuration.setOnSeekBarChangeListener(new DurationSeekBarListener(tv_taskDuration, DurationUnit.MINUTES));
@@ -169,6 +183,7 @@ public class SettingsActivity extends Activity {
 				cb_keepScreenOn.setOnCheckedChangeListener(new CheckBoxChangeListener());
 				cb_disableSoundVibration.setOnCheckedChangeListener(new VibrationSoundChangeListener());
 				cb_disableWiFi.setOnCheckedChangeListener(new CheckBoxChangeListener());
+				cb_darkTheme.setOnCheckedChangeListener(new CheckBoxChangeListener());
 			}
 		}
 		else {
@@ -191,7 +206,7 @@ public class SettingsActivity extends Activity {
 		);
 		separator.setText(separatorText);
 		separator.setTextSize(pixelsToScaledPixels(getResources().getDimension(R.dimen.separator_textSize)));
-		separator.setTextColor(getResources().getColor(R.color.darkRed, this.getTheme()));
+		separator.setTextColor(getSeparatorColor());
 		separator.setTypeface(Typeface.create("sans-seeerif-medium", Typeface.BOLD));
 
 		// Add the view to the main layout
@@ -299,7 +314,6 @@ public class SettingsActivity extends Activity {
 			name.setText(settingName);
 			name.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 			name.setTextSize(pixelsToScaledPixels(res.getDimension(R.dimen.setting_name_textSize)));
-			name.setTextColor(res.getColor(R.color.black, this.getTheme()));
 			name.setPadding(
 					pixelsToDensityPixels(5),
 					pixelsToDensityPixels(15),
@@ -336,6 +350,18 @@ public class SettingsActivity extends Activity {
 	 */
 	private int pixelsToScaledPixels(float pixels) {
 		return (int) (pixels / getResources().getDisplayMetrics().scaledDensity);
+	}
+
+	/**
+	 * Get the current theme and based on it decides the separator color
+	 * @return the separator color
+	 */
+	private int getSeparatorColor() {
+		if (MainActivity.getThemeId(this) == R.style.DarkTheme) {
+			return getResources().getColor(R.color.darkSeparatorColor, getTheme());
+		} else {
+			return getResources().getColor(R.color.darkRed, getTheme());
+		}
 	}
 
 	/**

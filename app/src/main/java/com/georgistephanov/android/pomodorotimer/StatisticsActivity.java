@@ -1,31 +1,27 @@
 package com.georgistephanov.android.pomodorotimer;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewPropertyAnimator;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lecho.lib.hellocharts.gesture.ZoomType;
 import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
@@ -60,6 +56,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Utils.onActivityCreateSetTheme(this);
 		setContentView(R.layout.activity_statistics);
 		setTitle(getResources().getString(R.string.menu_statistics));
 
@@ -73,6 +70,11 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 
 		// Set the default period
 		setPeriod(defaultPeriod);
+
+		// Set the correct background colours depending on the theme
+		if (MainActivity.getThemeId(this) == R.style.DarkTheme) {
+			setDarkThemeColors();
+		}
 	}
 
 	public void onArrowDownClick(View view) {
@@ -328,6 +330,10 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		pieChartData.setHasLabels(true);
 		pieChartData.setHasLabelsOnlyForSelected(true);
 		pieChartData.setHasCenterCircle(true);
+
+		if (MainActivity.getThemeId(this) == R.style.DarkTheme) {
+			pieChartData.setCenterText1Color(getResources().getColor(R.color.lightGray, this.getTheme()));
+		}
 		pieChartData.setCenterText1FontSize((int) getResources().getDimension(R.dimen.pie_chart_textSize));
 
 		PieChartView pieChartView = findViewById(R.id.pieChart);
@@ -407,7 +413,12 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 					getResources().getDisplayMetrics().scaledDensity * 7
 				);
 				label.setText(String.valueOf(sv.getLabelAsChars()));
-				label.setTextColor(getResources().getColor(R.color.gray, this.getTheme()));
+
+				int textColor = (MainActivity.getThemeId(this) == R.style.DarkTheme)
+						? getResources().getColor(R.color.lightGray, this.getTheme())
+						: getResources().getColor(R.color.gray, this.getTheme());
+
+				label.setTextColor(textColor);
 			}
 
 			// Add the bullet and the text to the row and add the row to the layout
@@ -477,6 +488,27 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	 */
 	private int getNextColor() {
 		return getResources().getIntArray(R.array.pieChart)[colourNumber++];
+	}
+
+	/**
+	 * Sets the background color of the linear layouts on the statistics page
+	 * dark if the theme is dark.
+	 */
+	private void setDarkThemeColors() {
+		((LinearLayout) this.findViewById(R.id.topLayout))
+				.setBackgroundColor(getResources().getColor(R.color.darkPrimaryDark, this.getTheme()));
+
+		((LinearLayout) this.findViewById(R.id.lineGraphLayout))
+				.setBackgroundColor(getResources().getColor(R.color.darkPrimaryDark, this.getTheme()));
+
+		((LinearLayout) this.findViewById(R.id.lineGraphInfoLayout))
+				.setBackgroundColor(getResources().getColor(R.color.darkPrimaryDark, this.getTheme()));
+
+		((LinearLayout) this.findViewById(R.id.pieChartLayout))
+				.setBackgroundColor(getResources().getColor(R.color.darkPrimaryDark, this.getTheme()));
+
+		((LinearLayout) this.findViewById(R.id.bullet_list_layout))
+				.setBackgroundColor(getResources().getColor(R.color.darkPrimaryDark, this.getTheme()));
 	}
 
 	private class PieChartValueTouchListener implements PieChartOnValueSelectListener {

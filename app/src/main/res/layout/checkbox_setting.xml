@@ -5,6 +5,7 @@
 	android:layout_height="wrap_content"
 	android:button="@null"
 	android:background="@android:color/transparent"
+	android:textColor="?android:textColorSecondary"
 	android:drawableRight="?android:attr/listChoiceIndicatorMultiple">
 
 </CheckBox>

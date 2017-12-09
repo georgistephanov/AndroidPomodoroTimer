@@ -2,7 +2,11 @@
 <resources>
 	<color name="colorPrimary">#FF5722</color>
 	<color name="colorPrimaryDark">#E64A19</color>
-	<color name="colorAccent">#E64A19</color>
+	<color name="colorAccent">#FF5722</color>
+
+	<color name="darkPrimary">#607D8B</color>
+	<color name="darkPrimaryDark">#455A64</color>
+	<color name="darkAccent">#FF9100</color>
 
 	<color name="white">#FFF</color>
 	<color name="lightGray">#E0E0E0</color>
@@ -10,6 +14,7 @@
 	<color name="black">#000000</color>
 
 	<color name="darkRed">#C62828</color>
+	<color name="darkSeparatorColor">#78909C</color>
 	<color name="rippleButton">#E0E0E0</color>
 	<color name="ripplePopupMenu">#E0E0E0</color>
 	<color name="breakGreen">#69F0AE</color>

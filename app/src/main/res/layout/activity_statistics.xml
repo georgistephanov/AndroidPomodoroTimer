@@ -12,7 +12,6 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
-		android:background="@color/lightGray"
 		tools:context="com.georgistephanov.android.pomodorotimer.StatisticsActivity">
 
 		<LinearLayout
@@ -21,6 +20,7 @@
 			android:orientation="vertical">
 
 			<LinearLayout
+				android:id="@+id/topLayout"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="horizontal"
@@ -49,6 +49,7 @@
 			</LinearLayout>
 
 			<LinearLayout
+				android:id="@+id/lineGraphLayout"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="vertical"
@@ -76,6 +77,7 @@
 			</LinearLayout>
 
 			<LinearLayout
+				android:id="@+id/lineGraphInfoLayout"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:background="@color/white"
@@ -143,6 +145,7 @@
 		</LinearLayout>
 
 		<LinearLayout
+			android:id="@+id/pieChartLayout"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"

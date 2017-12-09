@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "pomodoro";
-	private static final int SCHEMA = 3;
+	private static final int SCHEMA = 4;
 
 	// The task table name and its columns
 	private static final String TASK_TABLE = "task";
@@ -30,17 +30,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SETTINGS_KEEP_SCREEN = "keep_screen";
 	private static final String SETTINGS_DISABLE_VIBR_SOUND = "dis_vibration_sound";
 	private static final String SETTINGS_DISABLE_WIFI = "dis_wifi";
+	private static final String SETTINGS_DARK_THEME = "dark_theme";
 
 	// Default settings
 	private static final int DEFAULT_TASK_LENGTH = 1500000;
 	private static final int DEFAULT_SHORT_BREAK_LENGTH = 300000;
-	private static final int DEFAULT_LONG_BREAK_LENGTH = 600000;
+	private static final int DEFAULT_LONG_BREAK_LENGTH = 1200000;
 	private static final int DEFAULT_LONG_BREAK_AFTER = 4;
 	private static final int DEFAULT_NOTIFICATION_VIBRATE = 1;
 	private static final int DEFAULT_NOTIFICATION_PLAY_SOUND = 1;
 	private static final int DEFAULT_KEEP_SCREEN = 1;
 	private static final int DEFAULT_DISABLE_VIBR_SOUND = 0;
 	private static final int DEFAULT_DISABLE_WIFI = 0;
+	private static final int DEFAULT_DARK_THEME = 0;
 
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, SCHEMA);
@@ -62,7 +64,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				"play_sound 			INTEGER NOT NULL," +
 				"keep_screen 			INTEGER NOT NULL," +
 				"dis_vibration_sound 	INTEGER NOT NULL," +
-				"dis_wifi 				INTEGER NOT NULL)");
+				"dis_wifi 				INTEGER NOT NULL," +
+				"dark_theme				INTEGER NOT NULL)");
 
 		// Set the default values
 		ContentValues contentValues = new ContentValues();
@@ -75,6 +78,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		contentValues.put(SETTINGS_KEEP_SCREEN, DEFAULT_KEEP_SCREEN);
 		contentValues.put(SETTINGS_DISABLE_VIBR_SOUND, DEFAULT_DISABLE_VIBR_SOUND);
 		contentValues.put(SETTINGS_DISABLE_WIFI, DEFAULT_DISABLE_WIFI);
+		contentValues.put(SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
 	}
 
@@ -93,7 +97,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				"play_sound 			INTEGER NOT NULL," +
 				"keep_screen 			INTEGER NOT NULL," +
 				"dis_vibration_sound 	INTEGER NOT NULL," +
-				"dis_wifi 				INTEGER NOT NULL)");
+				"dis_wifi 				INTEGER NOT NULL," +
+				"dark_theme				INTEGER NOT NULL)");
 
 		// Set the default values
 		ContentValues contentValues = new ContentValues();
@@ -106,14 +111,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		contentValues.put(SETTINGS_KEEP_SCREEN, DEFAULT_KEEP_SCREEN);
 		contentValues.put(SETTINGS_DISABLE_VIBR_SOUND, DEFAULT_DISABLE_VIBR_SOUND);
 		contentValues.put(SETTINGS_DISABLE_WIFI, DEFAULT_DISABLE_WIFI);
+		contentValues.put(SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
 		sqLiteDatabase.insert(SETTINGS_TABLE, null, contentValues);
-
-		sqLiteDatabase.execSQL("DROP TABLE IF EXISTS task");
-		sqLiteDatabase.execSQL("CREATE TABLE task (" +
-				"name 					STRING NOT NULL," +
-				"length 				INTEGER NOT NULL," +
-				"date					INTEGER NOT NULL)");
-
 	}
 
 
@@ -159,6 +158,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 	public String getSettingsDisableWifi() {
 		return SETTINGS_DISABLE_WIFI;
+	}
+	public String getSettingsDarkTheme() {
+		return SETTINGS_DARK_THEME;
 	}
 
 	public int getDefaultTaskLength() {
