@@ -299,10 +299,21 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 				String taskName = cursor.getString(0);
 				int taskDuration = cursor.getInt(1) / 60;
 
-				if ( !tasks.containsKey(taskName) ) {
+				// Check if such entry exists (not matching the whitespace and/or casing)
+				// and if exists don't create another entry but rather just add the taskDuration to it
+				// This could be allowed as low amount of different tasks are expected exist in most cases
+				boolean entryFound = false;
+				if ( tasks.size() > 0 ) {
+					for (Map.Entry<String, Integer> e : tasks.entrySet()) {
+						if (taskName.trim().equalsIgnoreCase(e.getKey())) {
+							tasks.replace(e.getKey(), tasks.get(e.getKey()), tasks.get(e.getKey()) + taskDuration);
+							entryFound = true;
+						}
+					}
+				}
+
+				if ( !entryFound ) {
 					tasks.put(taskName, taskDuration);
-				} else {
-					tasks.replace(taskName, tasks.get(taskName), tasks.get(taskName) + taskDuration);
 				}
 			}
 

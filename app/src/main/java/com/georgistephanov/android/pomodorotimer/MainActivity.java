@@ -18,7 +18,6 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -48,7 +47,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	DatabaseHelper database;
 
 	// Notifications class instance
-	Notifications notificator;
+	Notifications notification;
 
 	// The length of the task and the break in milliseconds
 	private int taskLength;
@@ -131,7 +130,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		b_continue = findViewById(R.id.continueTask);
 
 		// Create a notifications class instance
-		notificator = new Notifications(this);
+		notification = new Notifications(this);
 		// Get the notifications settings from the database
 		updateNotificationsSettings();
 
@@ -269,9 +268,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		// Start a break depending on whether it is supposed to be a short or a long break
 		if ( longBreakAfter == numOfConsecutiveTasks ) {
+			TimerService.setTaskDuration(longBreakLength);
 			startTask(longBreakLength);
 			numOfConsecutiveTasks = 0;
 		} else {
+			TimerService.setTaskDuration(shortBreakLength);
 			startTask(shortBreakLength);
 		}
 	}
@@ -430,8 +431,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			// Update the notification settings
 			boolean vibrate = cursor.getInt(4) != 0;
 			boolean playSound = cursor.getInt(5) != 0;
-			notificator.setVibrate(vibrate);
-			notificator.setPlaySound(playSound);
+			notification.setVibrate(vibrate);
+			notification.setPlaySound(playSound);
 		} else {
 			throw new RuntimeException("Database failed while getting the settings.");
 		}
@@ -569,8 +570,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		// If true -> the timer has ended uninterrupted
 		if (notification) {
-			notificator.playTimerEndNotification();
-			notificator.showStatusBarNotification(isBreak);
+			this.notification.playTimerEndNotification();
+			this.notification.showStatusBarNotification(isBreak);
 		}
 
 		// Restores the colours if it has been a break

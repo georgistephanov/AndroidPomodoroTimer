@@ -45,12 +45,12 @@ public class Notifications {
 	}
 
 	/**
-	 * Creates and displays a notificator in the status bar with the default notificator
-	 * title and text. Creates and bounds an intent to the notificator so that when it is
+	 * Creates and displays a notification in the status bar with the default notification
+	 * title and text. Creates and bounds an intent to the notification so that when it is
 	 * clicked the app will be put on top.
 	 */
 	void showStatusBarNotification(boolean wasBreak) {
-		// Builds the notificator
+		// Builds the notification
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, MAIN_NOTIFICATION_CHANNEL);
 		notificationBuilder
 				.setAutoCancel(true)
@@ -72,7 +72,7 @@ public class Notifications {
 		// Stacks the activity as the only activity open of the app even if it was open from another activity
 		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-		// Bounds the intent which to execute when the notificator is clicked to the notificator
+		// Bounds the intent which to execute when the notification is clicked to the notification
 		PendingIntent intent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		notificationBuilder.setContentIntent(intent);
 
@@ -107,7 +107,7 @@ public class Notifications {
 		// Stacks the activity as the only activity open of the app even if it was open from another activity
 		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-		// Bounds the intent which to execute when the notificator is clicked to the notificator
+		// Bounds the intent which to execute when the notification is clicked to the notification
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		builder.setContentIntent(pendingIntent);
 
