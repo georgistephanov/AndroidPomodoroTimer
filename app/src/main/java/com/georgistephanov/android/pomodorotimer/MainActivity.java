@@ -16,19 +16,20 @@ package com.georgistephanov.android.pomodorotimer;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,10 +41,7 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import java.lang.reflect.Method;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
 	// Database helper instance
@@ -62,8 +60,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	// The state of the current timer in seconds
 	private int totalSecondsLeft;
 
-	private Timer timer;
-	private boolean isTimerRunning = false;
+	private boolean isTimerRunning;
 	private boolean isBreak = false;
 	private boolean hasEnded = false;
 	private boolean settingsUpdatePending = false;
@@ -86,7 +83,13 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	private int deviceDefaultRingerMode;
 	private boolean deviceDefaultWifiState;
 
-	TimerService timerService;
+	private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			totalSecondsLeft = intent.getIntExtra("timeLeft", -1) / 1000;
+			updateTimerClock();
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,12 +100,24 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Get the database helper instance
 		database = Database.getInstance(this);
 
-		// Updates the app theme if it had been changed
-		//updateTheme();
-
 		getActionBar().hide();
 
 		et_taskName = findViewById(R.id.taskName);
+		et_taskName.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+				TimerService.setTaskName(editable.toString());
+			}
+		});
+
 		b_deleteEditText = findViewById(R.id.deleteTask);
 
 		pb_timer = findViewById(R.id.pb_timer);
@@ -123,25 +138,19 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Get the task and break lengths from the database
 		updateTimeFromSettings();
 
-		timerService = new TimerService();
-		Intent notificationIntent = new Intent(this, TimerService.class);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		// Get the current timer state from the service
+		isTimerRunning = TimerService.isRunning();
+		if (isTimerRunning) {
+			resumeTask();
+		}
 
-		Notification notification = new NotificationCompat.Builder(this, "Channel")
-				.setContentTitle("Title")
-				.setContentText("Content text")
-				.setSmallIcon(R.drawable.ic_launcher_foreground)
-				.setContentIntent(pendingIntent)
-				.setTicker("Ticker text")
-				.build();
+		// Register the broadcast listener
+		LocalBroadcastManager.getInstance(this).registerReceiver(
+				broadcastReceiver, new IntentFilter("TimeLeft")
+		);
 
-		startService(notificationIntent);
-	}
-
-	@Override
-	protected void onDestroy() {
-		database.close();
-		super.onDestroy();
+		// Set the service context
+		TimerService.setContext(this);
 	}
 
 	@Override
@@ -156,7 +165,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		updateTheme();
 
 		// Update the notification settings
-		//updateNotificationsSettings();
+		updateNotificationsSettings();
 
 		super.onResume();
 	}
@@ -193,6 +202,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			if(et_taskName.hasFocus()) {
 				et_taskName.clearFocus();
 			}
+
+			TimerService.setTaskName("");
 		}
 	}
 
@@ -202,6 +213,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	public void onStartButtonClick(View view) {
 		if (!isTimerRunning) {
+			TimerService.setTaskDuration(taskLength);
 			startTask();
 			numOfConsecutiveTasks++;
 		}
@@ -234,8 +246,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			numOfConsecutiveTasks = 0;
 		}
 
+		if ( pb_animation.isRunning() ) {
+			pb_animation.end();
+		}
+
 		hasEnded = false;
-		pb_animation.end();
 		onTimerEnd(false);
 	}
 
@@ -248,6 +263,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	public void onBreakButtonClick(View view) {
 		isBreak = true;
+		TimerService.setIsBreak();
+
 		setBreakColors();
 
 		// Start a break depending on whether it is supposed to be a short or a long break
@@ -336,6 +353,33 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	}
 
 	/**
+	 * This method is called from the onCreate method of the activity if the timer
+	 * service is running upon activity creation. This method restores the progress
+	 * of the task session and displays it to the UI
+	 */
+	private void resumeTask() {
+		// Get the task name
+		String taskName = TimerService.getTaskName();
+		et_taskName.setText(taskName);
+
+		// Get the number of seconds left
+		int timeLeft = TimerService.getTimeLeft() / 1000;
+		// Get the progress that the animation makes per second (total progress is 3600)
+		float progressPerSecond = 3600f / (taskLength / 1000);
+		// Get the progress from which the animation should start
+		int progressToStartFrom = (int) Math.ceil(timeLeft * progressPerSecond);
+
+		// Resumes the animation of the timer
+		pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", progressToStartFrom, 0);
+		pb_animation.setDuration(taskLength);
+		pb_animation.setInterpolator(new LinearInterpolator());
+		pb_animation.start();
+
+		// Shows the correct buttons
+		showButtons();
+	}
+
+	/**
 	 * Reads the settings from the database and updates the task and break lengths.
 	 */
 	private void updateTimeFromSettings() {
@@ -411,13 +455,17 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			}
 
-			NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-			if ( notificationManager.isNotificationPolicyAccessGranted() ) {
-				if (disableVibrationSounds) {
-					AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-					deviceDefaultRingerMode = audioManager.getRingerMode();
-					audioManager.setRingerMode(audioManager.RINGER_MODE_SILENT);
+			try {
+				NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+				if (notificationManager.isNotificationPolicyAccessGranted()) {
+					if (disableVibrationSounds) {
+						AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+						deviceDefaultRingerMode = audioManager.getRingerMode();
+						audioManager.setRingerMode(audioManager.RINGER_MODE_SILENT);
+					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 			if (disableWiFi) {
@@ -504,9 +552,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Restore any settings altered during the work session
 		restoreSettingsOnEndOfSession();
 
-		// Write the task session to the database
-		writeTaskSessionToDatabase();
-
 		// Do the settings update if such is pending
 		if ( settingsUpdatePending ) {
 			updateTimeFromSettings();
@@ -539,41 +584,16 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * Starts the timer with the PomodoroTimerTask.
 	 */
 	private void startTimer() {
-		if (timer == null) {
-			timer = new Timer();
-			timer.schedule(new PomodoroTimerTask(), 1000, 1000);
-			isTimerRunning = true;
-		}
+		startService(new Intent(getBaseContext(), TimerService.class).putExtra("time", totalSecondsLeft));
+		isTimerRunning = true;
 	}
 
 	/**
 	 * Stops the timer and gives the object a null value.
 	 */
 	private void stopTimer() {
-		if (timer != null) {
-			timer.cancel();
-			timer = null;
-			isTimerRunning = false;
-		}
-	}
-
-	/**
-	 * Writes the task session to the database for the current task if it is not a break
-	 */
-	private void writeTaskSessionToDatabase() {
-		if ( !isBreak ) {
-			int taskSecondsCompleted = (taskLength / 1000) - totalSecondsLeft;
-			String taskName = et_taskName.getText().toString().length() != 0
-					? et_taskName.getText().toString()
-					: getResources().getString(R.string.task_default_name);
-
-			ContentValues contentValues = new ContentValues();
-			contentValues.put(database.getTaskNameColumnName(), taskName);
-			contentValues.put(database.getTaskLengthColumnName(), taskSecondsCompleted);
-			contentValues.put(database.getTaskDateColumnName(), System.currentTimeMillis());
-
-			Database.addTask(contentValues);
-		}
+		stopService(new Intent(getBaseContext(), TimerService.class));
+		isTimerRunning = false;
 	}
 
 	/**
@@ -621,7 +641,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			((ProgressBar) view).getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
 		}
 		else if (view instanceof ImageButton) {
-			((ImageButton) view).getBackground().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+			view.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
 		}
 	}
 
@@ -662,6 +682,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		}
 	}
 
+	/**
+	 * Updates the current theme that the app should be using based on the settings
+	 */
 	private void updateTheme() {
 		Cursor cursor = Database.getSettings();
 
@@ -694,19 +717,5 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		}
 		return 0;
-	}
-
-	/**
-	 * A TimerTask instance class that updates the timer clock every second.
-	 * It is used by the Timer class instance.
-	 */
-	private class PomodoroTimerTask extends TimerTask {
-		@Override
-		public void run() {
-			runOnUiThread(() -> {
-				totalSecondsLeft--;
-				updateTimerClock();
-			});
-		}
 	}
 }

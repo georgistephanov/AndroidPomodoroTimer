@@ -1,5 +1,6 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -85,5 +86,31 @@ public class Notifications {
 
 	void setPlaySound(boolean playSound) {
 		this.playSound = playSound;
+	}
+
+	static Notification buildTimerRunningNotification(Context context, int timeLeft, boolean isBreak) {
+		String contentTitle = (isBreak)
+				? context.getResources().getString(R.string.notification_break_session_title)
+				: context.getResources().getString(R.string.notification_work_session_title);
+		String contentText = (timeLeft / 60 / 1000 + 1) + " minutes left";
+
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "CHANNEL ID")
+				.setAutoCancel(false)
+				.setOngoing(true)
+				.setContentTitle(contentTitle)
+				.setContentText(contentText)
+				.setPriority(NotificationCompat.PRIORITY_HIGH)
+				.setSmallIcon(R.mipmap.ic_launcher_round);
+
+		// Creates an intent to this class
+		Intent notificationIntent = new Intent(context, MainActivity.class);
+		// Stacks the activity as the only activity open of the app even if it was open from another activity
+		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+		// Bounds the intent which to execute when the notificator is clicked to the notificator
+		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+		builder.setContentIntent(pendingIntent);
+
+		return builder.build();
 	}
 }
