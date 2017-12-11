@@ -147,9 +147,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				broadcastReceiver, new IntentFilter("TimeLeft")
 		);
-
-		// Set the service context
-		TimerService.setContext(this);
 	}
 
 	@Override

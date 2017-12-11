@@ -5,6 +5,7 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,7 +23,7 @@ public class TimerService extends Service {
 	private static final int SERVICE_ID = 623;
 	private static final int INTERVAL = 100;
 
-	private static Context mainActivityContext;
+	private Context context;
 	private Timer timer = new Timer();
 
 	private static int taskDuration;
@@ -40,6 +41,23 @@ public class TimerService extends Service {
 
 	@Override
 	public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+		context = this;
+
+		if (intent.getAction() != null && intent.getAction().equals("play")) {
+			// Get the settings from the database
+			Database.getInstance(this.getBaseContext()); // Make instance of the DatabaseHelper in case it hadn't been initalised
+			Cursor cursor = Database.getSettings();
+
+			if (cursor.moveToNext()) {
+				taskDuration = cursor.getInt(0);
+			} else {
+				throw new RuntimeException("Could not get the settings from the database");
+			}
+
+		} else if (intent.getAction() != null && intent.getAction().equals("stop")) {
+			stopSelf();
+		}
+
 		isRunning = true;
 		timeLeft = taskDuration;
 
@@ -51,7 +69,7 @@ public class TimerService extends Service {
 
 						// Every minute update the notification
 						if (timeLeft % 1000 % 60 == 0) {
-							startForeground(SERVICE_ID, Notifications.buildTimerRunningNotification(mainActivityContext, timeLeft, isBreak));
+							startForeground(SERVICE_ID, Notifications.buildTimerRunningNotification(context, timeLeft, isBreak));
 						}
 
 						// Send an update about the time left to the UI every second
@@ -123,14 +141,6 @@ public class TimerService extends Service {
 	}
 
 	/**
-	 * Sets the activity context to a local static variable to hold a reference to it.
-	 * @param context the (main) activity context
-	 */
-	static void setContext(Context context) {
-		mainActivityContext = context;
-	}
-
-	/**
 	 * Set the variable which controls whether the current task running is a work session or break
 	 * that it is a break.
 	 */
@@ -141,13 +151,13 @@ public class TimerService extends Service {
 	/**
 	 * Writes the task session to the database for the current task
 	 */
-	private static void writeTaskToDatabase() {
+	private void writeTaskToDatabase() {
 		taskName = taskName.length() != 0
 				? taskName
-				: mainActivityContext.getResources().getString(R.string.task_default_name);
+				: context.getResources().getString(R.string.task_default_name);
 		int timeCompleted = taskDuration / 1000 - timeLeft / 1000;
 
-		DatabaseHelper db = Database.getInstance(mainActivityContext);
+		DatabaseHelper db = Database.getInstance(context);
 
 		ContentValues cv = new ContentValues();
 		cv.put(db.getTaskNameColumnName(), taskName);
@@ -156,12 +166,15 @@ public class TimerService extends Service {
 		Database.addTask(cv);
 
 		db.close();
+
+		// Restore the task name after it had been written do the database for the next session
+		taskName = "";
 	}
 
-	private static void sendUpdateToUI(int timeLeft) {
+	private void sendUpdateToUI(int timeLeft) {
 		Intent intent = new Intent("TimeLeft")
 				.putExtra("timeLeft", timeLeft);
-		LocalBroadcastManager.getInstance(mainActivityContext).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 	}
 
 }
