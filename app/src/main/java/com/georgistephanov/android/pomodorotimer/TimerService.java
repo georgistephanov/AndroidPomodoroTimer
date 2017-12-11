@@ -27,7 +27,7 @@ public class TimerService extends Service {
 
 	private static int taskDuration;
 	private static int timeLeft;
-	private static String taskName;
+	private static String taskName = "";
 
 	private static boolean isBreak = false;
 	private static boolean isRunning = false;

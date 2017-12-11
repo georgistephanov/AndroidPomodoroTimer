@@ -296,7 +296,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 			Map<String, Integer> tasks = new HashMap<>();
 
 			while (cursor.moveToNext()) {
-				String taskName = cursor.getString(0);
+				String taskName = cursor.getString(0).trim();
 				int taskDuration = cursor.getInt(1) / 60;
 
 				// Check if such entry exists (not matching the whitespace and/or casing)
@@ -305,7 +305,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 				boolean entryFound = false;
 				if ( tasks.size() > 0 ) {
 					for (Map.Entry<String, Integer> e : tasks.entrySet()) {
-						if (taskName.trim().equalsIgnoreCase(e.getKey())) {
+						if (taskName.equalsIgnoreCase(e.getKey())) {
 							tasks.replace(e.getKey(), tasks.get(e.getKey()), tasks.get(e.getKey()) + taskDuration);
 							entryFound = true;
 						}

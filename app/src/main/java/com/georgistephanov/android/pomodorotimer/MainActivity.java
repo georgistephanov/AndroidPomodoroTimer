@@ -245,10 +245,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			numOfConsecutiveTasks = 0;
 		}
 
-		if ( pb_animation.isRunning() ) {
-			pb_animation.end();
-		}
-
 		hasEnded = false;
 		onTimerEnd(false);
 	}
@@ -562,6 +558,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Reset the clock to the initial length of the task
 		totalSecondsLeft = taskLength / 1000;
 		updateTime();
+
+		// Stop the animation if it is running
+		if ( pb_animation.isRunning() ) {
+			pb_animation.end();
+		}
 
 		// Animate the progressbar backwards to its beginning state
 		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 3600);
