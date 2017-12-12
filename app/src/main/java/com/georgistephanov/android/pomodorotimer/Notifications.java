@@ -54,6 +54,7 @@ public class Notifications {
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, MAIN_NOTIFICATION_CHANNEL);
 		notificationBuilder
 				.setAutoCancel(true)
+				.setAutoCancel(true)
 				.setSmallIcon(R.mipmap.ic_launcher_round);
 
 		Resources res = context.getResources();

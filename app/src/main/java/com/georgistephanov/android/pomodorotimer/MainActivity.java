@@ -46,9 +46,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	// Database helper instance
 	DatabaseHelper database;
 
-	// Notifications class instance
-	Notifications notification;
-
 	// The length of the task and the break in milliseconds
 	private int taskLength;
 	private int shortBreakLength;
@@ -130,11 +127,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		b_break = findViewById(R.id.takeBreak);
 		b_continue = findViewById(R.id.continueTask);
 
-		// Create a notifications class instance
-		notification = new Notifications(this);
-		// Get the notifications settings from the database
-		updateNotificationsSettings();
-
 		// Get the task and break lengths from the database
 		updateTimeFromSettings();
 
@@ -175,9 +167,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		// Update theme
 		updateTheme();
-
-		// Update the notification settings
-		updateNotificationsSettings();
 
 		super.onResume();
 	}
@@ -241,16 +230,16 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	public void onPauseButtonClick(View view) {
 		if ( isTimerRunning ) {
-			isPaused = true;
-			TimerService.setIsPause(false);
+			TimerService.setIsPause(isPaused);
 			pb_animation.pause();
 			stopTimer();
 		} else {
-			isPaused = false;
-			TimerService.setIsPause(true);
+			TimerService.setIsPause(isPaused);
 			pb_animation.resume();
 			startTimer();
 		}
+
+		isPaused = !isPaused;
 	}
 
 	/**
@@ -261,7 +250,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	public void onStopButtonClick(View view) {
 		isPaused = false;
-		TimerService.setIsPause(false);
 
 		if ( !isBreak ) {
 			// Restart the number of consecutive breaks
@@ -269,7 +257,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		}
 
 		hasEnded = false;
-		onTimerEnd(false);
+		onTimerEnd();
 	}
 
 	/**
@@ -444,24 +432,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	}
 
 	/**
-	 * Gets the current/new notification settings from the database and updates the notification
-	 * object.
-	 */
-	private void updateNotificationsSettings() {
-		Cursor cursor = Database.getSettings();
-
-		if (cursor.moveToNext()) {
-			// Update the notification settings
-			boolean vibrate = cursor.getInt(4) != 0;
-			boolean playSound = cursor.getInt(5) != 0;
-			notification.setVibrate(vibrate);
-			notification.setPlaySound(playSound);
-		} else {
-			throw new RuntimeException("Database failed while getting the settings.");
-		}
-	}
-
-	/**
 	 * Gets the current/new During work session settings from the database and updates the
 	 * current settings if they're different.
 	 */
@@ -546,7 +516,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		}
 		else {
 			hasEnded = true;
-			onTimerEnd(true);
+			onTimerEnd();
 		}
 	}
 
@@ -568,7 +538,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * activity to its initial position and allows the user to start a new
 	 * pomodoro.
 	 */
-	private void onTimerEnd(boolean notification) {
+	private void onTimerEnd() {
 		// Stop the timer
 		stopTimer();
 		showButtons();
@@ -595,12 +565,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 3600);
 		animation.setDuration(500);
 		animation.start();
-
-		// If true -> the timer has ended uninterrupted
-		if (notification) {
-			this.notification.playTimerEndNotification();
-			this.notification.showStatusBarNotification(isBreak);
-		}
 
 		// Restores the colours if it has been a break
 		if ( isBreak ) {

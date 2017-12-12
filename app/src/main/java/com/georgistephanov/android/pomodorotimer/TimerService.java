@@ -2,13 +2,17 @@ package com.georgistephanov.android.pomodorotimer;
 
 import android.app.ActivityManager;
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -93,6 +97,12 @@ public class TimerService extends Service {
 							if (timeLeft % 1000 == 0) {
 								sendUpdateToUI(timeLeft);
 							}
+
+							// Execute the notifications on timer end
+							if ( timeLeft == 0 ) {
+								timerEndNotification();
+							}
+
 						}
 					}, 0, INTERVAL);
 
@@ -160,16 +170,8 @@ public class TimerService extends Service {
 	}
 
 	/**
-	 * Returns whether the task/break is paused
-	 * @return isPaused
-	 */
-	static boolean isPaused() {
-		return isPause;
-	}
-
-	/**
 	 * Returns whether the service has ended while the app was not running
-	 * @return
+	 * @return true if the service has finished in the background
 	 */
 	static boolean hasFinishedInBackground() {
 		return hasFinishedInBackground;
@@ -231,9 +233,37 @@ public class TimerService extends Service {
 		taskName = "";
 	}
 
+	void timerEndNotification() {
+		// Get notifications object
+		Notifications notification = new Notifications(this);
+
+		// Get the notifications settings from the database
+		Cursor cursor = Database.getSettings();
+		if (cursor.moveToNext()) {
+			// Update the notification settings
+			boolean vibrate = cursor.getInt(4) != 0;
+			notification.setVibrate(vibrate);
+
+			boolean playSound = cursor.getInt(5) != 0;
+			notification.setPlaySound(playSound);
+		} else {
+			throw new RuntimeException("Could not get results from the database");
+		}
+
+		notification.showStatusBarNotification(isBreak);
+		notification.playTimerEndNotification();
+	}
+
+	/**
+	 * Sends a broadcast update to the UI (Main activity) with the time that is left
+	 * in seconds, so that the UI could be updated to show the correct time left on the
+	 * timer.
+	 * @param timeLeft until the task finishes (in seconds)
+	 */
 	private void sendUpdateToUI(int timeLeft) {
 		Intent intent = new Intent("TimeLeft")
 				.putExtra("timeLeft", timeLeft);
+
 		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 	}
 }
