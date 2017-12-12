@@ -56,12 +56,14 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	// The state of the current timer in seconds
 	private int totalSecondsLeft;
 
+	// Control-flow variables
 	private boolean isTimerRunning;
 	private boolean isPaused = false;
 	private boolean isBreak = false;
 	private boolean hasEnded = false;
 	private boolean settingsUpdatePending = false;
 
+	// App views
 	ObjectAnimator pb_animation;
 
 	EditText et_taskName;
@@ -151,7 +153,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			updateTimeFromSettings();
 
 			// If the service has finished while the app wasn't active
-			if ( TimerService.hasFinishedInBackground() ) {
+			if ( TimerService.hasFinishedInBackground()
+					|| (getIntent().getAction() != null && getIntent().getAction().equals("breakContinue"))) {
 				// Stop the animation
 				if ( pb_animation != null && pb_animation.isRunning()) {
 					pb_animation.cancel();
@@ -160,7 +163,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				if ( pb_timer != null && pb_timer.getProgress() != pb_timer.getMax()) {
 					pb_timer.setProgress(pb_timer.getMax());
 				}
-				// Restore the buttons on the activity
+				// Show the `take a break`/`continue` buttons to let the user continue working
+				hasEnded = true;
 				showButtons();
 			}
 		}
@@ -250,6 +254,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	public void onStopButtonClick(View view) {
 		isPaused = false;
+		TimerService.setIsPause(false);
 
 		if ( !isBreak ) {
 			// Restart the number of consecutive breaks
@@ -556,21 +561,23 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		totalSecondsLeft = taskLength / 1000;
 		updateTime();
 
-		// Stop the animation if it is running
-		if ( pb_animation.isRunning() ) {
-			pb_animation.end();
-		}
-
-		// Animate the progressbar backwards to its beginning state
-		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 3600);
-		animation.setDuration(500);
-		animation.start();
+		// Set the correct pause state to the TimerService
+		TimerService.setIsPause(isPaused);
 
 		// Restores the colours if it has been a break
 		if ( isBreak ) {
 			isBreak = false;
 			restoreColors();
 		}
+
+		// Stop the animation if it is running
+		if ( pb_animation.isRunning() ) {
+			pb_animation.end();
+		}
+		// Animate the progressbar backwards to its beginning state
+		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 3600);
+		animation.setDuration(500);
+		animation.start();
 	}
 
 	/**
@@ -666,6 +673,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 				// Show the `Break` and `Continue` buttons
 				b_break.setVisibility(View.VISIBLE);
 				b_continue.setVisibility(View.VISIBLE);
+				b_start.setVisibility(View.INVISIBLE);
 			}
 			else {
 				// Show the start button

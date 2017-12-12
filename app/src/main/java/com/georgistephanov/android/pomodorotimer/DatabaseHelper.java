@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "pomodoro";
-	private static final int SCHEMA = 4;
+	private static final int SCHEMA = 6;
 
 	// The task table name and its columns
 	private static final String TASK_TABLE = "task";
@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final int DEFAULT_DISABLE_WIFI = 0;
 	private static final int DEFAULT_DARK_THEME = 0;
 
-	public DatabaseHelper(Context context) {
+	DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, SCHEMA);
 	}
 
@@ -116,63 +116,63 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 
-	public String getTaskTableName() {
+	String getTaskTableName() {
 		return TASK_TABLE;
 	}
-	public String getTaskNameColumnName() {
+	String getTaskNameColumnName() {
 		return TASK_NAME;
 	}
-	public String getTaskLengthColumnName() {
+	String getTaskLengthColumnName() {
 		return TASK_LENGTH;
 	}
-	public String getTaskDateColumnName() {
+	String getTaskDateColumnName() {
 		return TASK_DATE;
 	}
 
-	public String getSettingsTableName() {
+	String getSettingsTableName() {
 		return SETTINGS_TABLE;
 	}
-	public String getSettingsTaskColumnName() {
+	String getSettingsTaskColumnName() {
 		return SETTINGS_TASK_LEGTH;
 	}
-	public String getSettingsShortBreakLengthColumnName() {
+	String getSettingsShortBreakLengthColumnName() {
 		return SETTINGS_SHORT_BREAK_LENGTH;
 	}
-	public String getSettingsLongBreakLengthColumnName() {
+	String getSettingsLongBreakLengthColumnName() {
 		return SETTINGS_LONG_BREAK_LENGTH;
 	}
-	public String getSettingsLongBreakAfterColumnName() {
+	String getSettingsLongBreakAfterColumnName() {
 		return SETTINGS_LONG_BREAK_AFTER;
 	}
-	public String getSettingsNotificationsVibrate() {
+	String getSettingsNotificationsVibrate() {
 		return SETTINGS_NOTIFICATIONS_VIBRATE;
 	}
-	public String getSettingsNotificationsPlaySound() {
+	String getSettingsNotificationsPlaySound() {
 		return SETTINGS_NOTIFICATIONS_PLAY_SOUND;
 	}
-	public String getSettingsKeepScreen() {
+	String getSettingsKeepScreen() {
 		return SETTINGS_KEEP_SCREEN;
 	}
-	public String getSettingsDisableVibrationSound() {
+	String getSettingsDisableVibrationSound() {
 		return SETTINGS_DISABLE_VIBR_SOUND;
 	}
-	public String getSettingsDisableWifi() {
+	String getSettingsDisableWifi() {
 		return SETTINGS_DISABLE_WIFI;
 	}
-	public String getSettingsDarkTheme() {
+	String getSettingsDarkTheme() {
 		return SETTINGS_DARK_THEME;
 	}
 
-	public int getDefaultTaskLength() {
+	int getDefaultTaskLength() {
 		return DEFAULT_TASK_LENGTH;
 	}
-	public int getDefaultShortBreakLength() {
+	int getDefaultShortBreakLength() {
 		return DEFAULT_SHORT_BREAK_LENGTH;
 	}
-	public int getDefaultLongBreakLength() {
+	int getDefaultLongBreakLength() {
 		return DEFAULT_LONG_BREAK_LENGTH;
 	}
-	public int getDefaultLongBreakAfter() {
+	int getDefaultLongBreakAfter() {
 		return DEFAULT_LONG_BREAK_AFTER;
 	}
 }

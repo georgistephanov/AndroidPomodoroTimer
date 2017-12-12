@@ -72,6 +72,9 @@ public class Notifications {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		// Stacks the activity as the only activity open of the app even if it was open from another activity
 		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		// Set intent action to notify the main activity that it was opened from the notification after a task
+		// or a break had finished and therefore it should display the correct buttons for break / continue
+		notificationIntent.setAction(context.getResources().getString(R.string.notification_intentAction_breakContinue));
 
 		// Bounds the intent which to execute when the notification is clicked to the notification
 		PendingIntent intent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
@@ -93,7 +96,10 @@ public class Notifications {
 		String contentTitle = (isBreak)
 				? context.getResources().getString(R.string.notification_break_session_title)
 				: context.getResources().getString(R.string.notification_work_session_title);
-		String contentText = (timeLeft / 60 / 1000 + 1) + " minutes left";
+		int minutesLeft = (timeLeft / 60 / 1000) + 1;
+		String contentText = minutesLeft > 1
+				? minutesLeft + " minutes left"
+				: minutesLeft + " minute left";
 
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "CHANNEL ID")
 				.setAutoCancel(false)

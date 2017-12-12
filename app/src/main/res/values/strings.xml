@@ -51,6 +51,7 @@
 	<string name="notification_break_text">Your break is over. It\'s time for another task.</string>
 	<string name="notification_work_session_title">Work session</string>
 	<string name="notification_break_session_title">Having a break</string>
+	<string name="notification_intentAction_breakContinue">breakContinue</string>
 
 	<!-- General -->
 	<string name="plain_string">%s</string>

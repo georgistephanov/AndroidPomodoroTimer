@@ -233,6 +233,10 @@ public class TimerService extends Service {
 		taskName = "";
 	}
 
+	/**
+	 * Executes the different notifications if they aren't stopped from the settings when the
+	 * timer ends uninterrupted.
+	 */
 	void timerEndNotification() {
 		// Get notifications object
 		Notifications notification = new Notifications(this);
