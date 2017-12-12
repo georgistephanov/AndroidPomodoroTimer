@@ -1,5 +1,6 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -13,6 +14,8 @@ import android.widget.RemoteViews;
  */
 
 public class AppWidget extends AppWidgetProvider {
+	private static Context context;
+
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 		Intent intent = new Intent(context, TimerService.class);

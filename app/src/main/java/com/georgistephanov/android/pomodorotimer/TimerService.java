@@ -1,5 +1,6 @@
 package com.georgistephanov.android.pomodorotimer;
 
+import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.Service;
 import android.content.ContentValues;
@@ -20,6 +21,8 @@ import java.util.TimerTask;
  */
 
 public class TimerService extends Service {
+	private static TimerService serviceInstance = null;
+
 	private static final int SERVICE_ID = 623;
 	private static final int INTERVAL = 100;
 
@@ -41,61 +44,82 @@ public class TimerService extends Service {
 
 	@Override
 	public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-		context = this;
 
-		if (intent.getAction() != null && intent.getAction().equals("play")) {
-			// Get the settings from the database
-			Database.getInstance(this.getBaseContext()); // Make instance of the DatabaseHelper in case it hadn't been initalised
-			Cursor cursor = Database.getSettings();
+		// Only if no instance of this service is registered, register it
+		if ( serviceInstance == null ) {
+			// Hold a reference to the current service context
+			context = this;
 
-			if (cursor.moveToNext()) {
-				taskDuration = cursor.getInt(0);
-			} else {
-				throw new RuntimeException("Could not get the settings from the database");
+			// Check if it has been started from the app widget and get the task duration if so
+			if (intent.getAction() != null && intent.getAction().equals("play")) {
+				// Get the settings from the database
+				Database.getInstance(this.getBaseContext()); // Make instance of the DatabaseHelper in case it hadn't been initalised
+				Cursor cursor = Database.getSettings();
+
+				if (cursor.moveToNext()) {
+					taskDuration = cursor.getInt(0);
+				} else {
+					throw new RuntimeException("Could not get the settings from the database");
+				}
 			}
 
-		} else if (intent.getAction() != null && intent.getAction().equals("stop")) {
-			stopSelf();
+			isRunning = true;
+			timeLeft = taskDuration;
+
+			// Schedule the timer which will run every 100 milliseconds
+			timer.scheduleAtFixedRate(
+					new TimerTask() {
+						@Override
+						public void run() {
+							// Subtract from the total time left the interval in which the timer runs
+							timeLeft -= INTERVAL;
+
+							// Update the notification every minute
+							if (timeLeft % 1000 % 60 == 0) {
+								startForeground(SERVICE_ID, Notifications.buildTimerRunningNotification(context, timeLeft, isBreak));
+							}
+
+							// Send an update about the time left to the UI every second
+							if (timeLeft % 1000 == 0) {
+								sendUpdateToUI(timeLeft);
+							}
+						}
+					}, 0, INTERVAL);
+
+			// Initialise the service instance at the end so that it is known that a service is running
+			// and no other will be registered until this one finishes
+			serviceInstance = this;
+		} else {
+			// If the stop button on the app widget has been pressed when a service is running - stop it
+			if (intent.getAction() != null && intent.getAction().equals("stop")) {
+				stopSelf();
+			}
 		}
-
-		isRunning = true;
-		timeLeft = taskDuration;
-
-		timer.scheduleAtFixedRate(
-				new TimerTask() {
-					@Override
-					public void run() {
-						timeLeft -= INTERVAL;
-
-						// Every minute update the notification
-						if (timeLeft % 1000 % 60 == 0) {
-							startForeground(SERVICE_ID, Notifications.buildTimerRunningNotification(context, timeLeft, isBreak));
-						}
-
-						// Send an update about the time left to the UI every second
-						if (timeLeft % 1000 == 0) {
-							sendUpdateToUI(timeLeft);
-						}
-					}
-				}, 0, INTERVAL);
 
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onDestroy() {
+		// Unregister the static service instance
+		serviceInstance = null;
+
+		// Stop the timer
 		if (timer != null) {
 			timer.cancel();
 		}
 
+		// Write the task to the database if it was not a break
 		if ( isBreak ) {
 			isBreak = false;
 		} else {
 			writeTaskToDatabase();
 		}
 
+		// Update the isRunning flag
 		isRunning = false;
 
+		// Stop the foreground service and remove the notification
 		stopForeground(true);
 		super.onDestroy();
 	}
@@ -176,5 +200,4 @@ public class TimerService extends Service {
 				.putExtra("timeLeft", timeLeft);
 		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 	}
-
 }
