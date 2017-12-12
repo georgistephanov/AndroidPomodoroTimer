@@ -45,4 +45,13 @@
 		<item name="android:background">@drawable/circle_button</item>
 		<item name="android:tint">@color/white</item>
 	</style>
+
+	<style name="widget_buttons">
+		<item name="android:layout_width">@dimen/widget_roundButton_size</item>
+		<item name="android:layout_height">@dimen/widget_roundButton_size</item>
+		<item name="android:background">@drawable/circle_button</item>
+		<item name="android:tint">@color/white</item>
+		<item name="android:backgroundTint">#FD6860</item>
+		<item name="android:layout_centerVertical">true</item>
+	</style>
 </resources>

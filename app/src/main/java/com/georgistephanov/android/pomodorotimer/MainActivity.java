@@ -60,6 +60,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	private int totalSecondsLeft;
 
 	private boolean isTimerRunning;
+	private boolean isPaused = false;
 	private boolean isBreak = false;
 	private boolean hasEnded = false;
 	private boolean settingsUpdatePending = false;
@@ -137,12 +138,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Get the task and break lengths from the database
 		updateTimeFromSettings();
 
-		// Get the current timer state from the service
-		isTimerRunning = TimerService.isRunning();
-		if (isTimerRunning) {
-			resumeTask();
-		}
-
 		// Register the broadcast listener
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				broadcastReceiver, new IntentFilter("TimeLeft")
@@ -151,10 +146,31 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 	@Override
 	protected void onResume()  {
-		if ( !isTimerRunning ) {
-			updateTimeFromSettings();
+		// Get the current timer state from the service
+		isTimerRunning = TimerService.isRunning();
+
+		if ( isTimerRunning ) {
+			resumeTask();
+			settingsUpdatePending = true; // The settings are updated on every resume of the activity
+		} else if ( isPaused ) {
+			showButtons();
+			settingsUpdatePending = true; // The settings are updated on every resume of the activity
 		} else {
-			settingsUpdatePending = true;
+			updateTimeFromSettings();
+
+			// If the service has finished while the app wasn't active
+			if ( TimerService.hasFinishedInBackground() ) {
+				// Stop the animation
+				if ( pb_animation != null && pb_animation.isRunning()) {
+					pb_animation.cancel();
+				}
+				// Set the progress to its maximum value
+				if ( pb_timer != null && pb_timer.getProgress() != pb_timer.getMax()) {
+					pb_timer.setProgress(pb_timer.getMax());
+				}
+				// Restore the buttons on the activity
+				showButtons();
+			}
 		}
 
 		// Update theme
@@ -217,14 +233,21 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 	/**
 	 * This method is called when the pause button has been clicked during a
-	 * task. It toggles between paused and running state of the timer.
+	 * task. It toggles between paused and running state of the timer. It uses a
+	 * local boolean variable isPaused to control the state of the timer onResume
+	 * of the activity, because it will not preserve paused state if the activity
+	 * is destroyed.
 	 * @param view the pause button
 	 */
 	public void onPauseButtonClick(View view) {
 		if ( isTimerRunning ) {
+			isPaused = true;
+			TimerService.setIsPause(false);
 			pb_animation.pause();
 			stopTimer();
 		} else {
+			isPaused = false;
+			TimerService.setIsPause(true);
 			pb_animation.resume();
 			startTimer();
 		}
@@ -237,6 +260,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * @param view the task end button
 	 */
 	public void onStopButtonClick(View view) {
+		isPaused = false;
+		TimerService.setIsPause(false);
+
 		if ( !isBreak ) {
 			// Restart the number of consecutive breaks
 			numOfConsecutiveTasks = 0;
@@ -255,7 +281,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	public void onBreakButtonClick(View view) {
 		isBreak = true;
-		TimerService.setIsBreak();
+		TimerService.setIsBreak(true);
 
 		setBreakColors();
 
@@ -363,11 +389,15 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		// Get the progress from which the animation should start
 		int progressToStartFrom = (int) Math.ceil(timeLeft * progressPerSecond);
 
-		// Resumes the animation of the timer
-		pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", progressToStartFrom, 0);
-		pb_animation.setDuration(taskLength);
-		pb_animation.setInterpolator(new LinearInterpolator());
-		pb_animation.start();
+		pb_timer.setProgress(progressToStartFrom);
+
+		if ( !isPaused ) {
+			// Resumes the animation of the timer
+			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", progressToStartFrom, 0);
+			pb_animation.setDuration(taskLength);
+			pb_animation.setInterpolator(new LinearInterpolator());
+			pb_animation.start();
+		}
 
 		// Shows the correct buttons
 		showButtons();
@@ -583,16 +613,16 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * Starts the timer with the PomodoroTimerTask.
 	 */
 	private void startTimer() {
-		startService(new Intent(getBaseContext(), TimerService.class).putExtra("time", totalSecondsLeft));
 		isTimerRunning = true;
+		startService(new Intent(getBaseContext(), TimerService.class).putExtra("time", totalSecondsLeft));
 	}
 
 	/**
 	 * Stops the timer and gives the object a null value.
 	 */
 	private void stopTimer() {
-		stopService(new Intent(getBaseContext(), TimerService.class));
 		isTimerRunning = false;
+		stopService(new Intent(getBaseContext(), TimerService.class));
 	}
 
 	/**
@@ -650,7 +680,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * button if a task is currently running.
 	 */
 	private void showButtons() {
-		if ( isTimerRunning ) {
+		if ( isTimerRunning || isPaused ) {
 			// Hide the start button
 			b_start.setVisibility(View.INVISIBLE);
 
@@ -663,8 +693,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			// Show the pause and break buttons
 			b_pause.setVisibility(View.VISIBLE);
 			b_stop.setVisibility(View.VISIBLE);
-		}
-		else {
+		} else {
 			// Hide the pause and break buttons
 			b_pause.setVisibility(View.INVISIBLE);
 			b_stop.setVisibility(View.INVISIBLE);

@@ -5,6 +5,7 @@
 	<dimen name="minutes_textSize">80sp</dimen>
 	<dimen name="seconds_textSize">60sp</dimen>
 	<dimen name="roundButton_size">70dp</dimen>
+	<dimen name="widget_roundButton_size">55dp</dimen>
 	<dimen name="rectButton_width">130dp</dimen>
 	<dimen name="rectButton_height">50dp</dimen>
 	<dimen name="rectButton_radius">5dp</dimen>

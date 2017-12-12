@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent" android:layout_height="match_parent"
-	android:background="#607D8B">
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#8037474F"
+	android:padding="10dp">
 
-	<Button
-		android:id="@+id/play"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="Play"
-		android:textSize="20sp"
-		android:background="#FFF"
+	<ImageButton
+		android:id="@+id/widget_launcher_icon"
+		android:layout_width="@dimen/widget_roundButton_size"
+		android:layout_height="@dimen/widget_roundButton_size"
+		android:background="@android:color/transparent"
+		android:src="@mipmap/ic_launcher_round"
+		android:scaleX="1.2"
+		android:scaleY="1.2"
+
 		android:layout_marginRight="10dp"
 		android:layout_centerVertical="true"
-		android:layout_alignParentLeft="true" />
+		android:layout_alignParentStart="true"/>
+	
+	<ImageButton
+		android:id="@+id/widget_start_button"
+		style="@style/widget_buttons"
+		android:src="@drawable/start_button_36dp"
 
-	<Button
-		android:id="@+id/stop"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="Stop"
-		android:textSize="20sp"
-		android:background="#FFF"
-		android:layout_centerVertical="true"
-		android:layout_toEndOf="@id/play"/>
+		android:layout_marginRight="10dp"
+		android:layout_toStartOf="@id/widget_stop_button" />
 
-	<TextView
-		android:id="@+id/timeLeft"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:textSize="25sp"
-		android:textColor="#FFF"
-		android:layout_centerVertical="true"
-		android:layout_toEndOf="@id/stop"/>
+	<ImageButton
+		android:id="@+id/widget_stop_button"
+		style="@style/widget_buttons"
+		android:src="@drawable/stop_button_36dp"
+
+		android:layout_marginRight="8dp"
+		android:layout_alignParentEnd="true"/>
 
 </RelativeLayout>

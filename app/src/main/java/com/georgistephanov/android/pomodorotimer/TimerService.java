@@ -35,6 +35,9 @@ public class TimerService extends Service {
 
 	private static boolean isBreak = false;
 	private static boolean isRunning = false;
+	private static boolean isPause = false;
+
+	private static boolean hasFinishedInBackground = false;
 
 	@Nullable
 	@Override
@@ -52,7 +55,7 @@ public class TimerService extends Service {
 
 			// Check if it has been started from the app widget and get the task duration if so
 			if (intent.getAction() != null && intent.getAction().equals("play")) {
-				// Get the settings from the database
+				// Get the task duration from the database
 				Database.getInstance(this.getBaseContext()); // Make instance of the DatabaseHelper in case it hadn't been initalised
 				Cursor cursor = Database.getSettings();
 
@@ -61,10 +64,17 @@ public class TimerService extends Service {
 				} else {
 					throw new RuntimeException("Could not get the settings from the database");
 				}
+			} else if (intent.getAction() != null && intent.getAction().equals("stop")) {
+				stopSelf();
 			}
 
 			isRunning = true;
-			timeLeft = taskDuration;
+
+			if ( !isPause ) {
+				timeLeft = taskDuration;
+			} else {
+				// The task was paused, so resume it without resetting the time left
+			}
 
 			// Schedule the timer which will run every 100 milliseconds
 			timer.scheduleAtFixedRate(
@@ -92,6 +102,7 @@ public class TimerService extends Service {
 		} else {
 			// If the stop button on the app widget has been pressed when a service is running - stop it
 			if (intent.getAction() != null && intent.getAction().equals("stop")) {
+				hasFinishedInBackground = true;
 				stopSelf();
 			}
 		}
@@ -109,14 +120,14 @@ public class TimerService extends Service {
 			timer.cancel();
 		}
 
-		// Write the task to the database if it was not a break
+		// Write the task to the database if it was not a break and it is not paused
 		if ( isBreak ) {
 			isBreak = false;
-		} else {
+		} else if ( !isPause ) {
 			writeTaskToDatabase();
 		}
 
-		// Update the isRunning flag
+		// Update the isRunning flag to its default values
 		isRunning = false;
 
 		// Stop the foreground service and remove the notification
@@ -149,6 +160,22 @@ public class TimerService extends Service {
 	}
 
 	/**
+	 * Returns whether the task/break is paused
+	 * @return isPaused
+	 */
+	static boolean isPaused() {
+		return isPause;
+	}
+
+	/**
+	 * Returns whether the service has ended while the app was not running
+	 * @return
+	 */
+	static boolean hasFinishedInBackground() {
+		return hasFinishedInBackground;
+	}
+
+	/**
 	 * Set the current task name
 	 * @param taskName1 the task name
 	 */
@@ -167,9 +194,18 @@ public class TimerService extends Service {
 	/**
 	 * Set the variable which controls whether the current task running is a work session or break
 	 * that it is a break.
+	 * @param br the value to set to the isBreak
 	 */
-	static void setIsBreak() {
-		isBreak = true;
+	static void setIsBreak(boolean br) {
+		isBreak = br;
+	}
+
+	/**
+	 * Sets the isPaused variable which controls whether the last task ran was paused or stopped
+	 * @param pause the value to set to the isPaused
+	 */
+	static void setIsPause(boolean pause) {
+		isPause = pause;
 	}
 
 	/**
