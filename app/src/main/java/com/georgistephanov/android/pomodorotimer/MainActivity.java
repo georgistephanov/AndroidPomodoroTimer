@@ -63,9 +63,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	private boolean hasEnded = false;
 	private boolean settingsUpdatePending = false;
 
-	// App views
-	ObjectAnimator pb_animation;
+	CustomAnimator animator;
 
+	// App views
 	EditText et_taskName;
 	ImageButton b_deleteEditText;
 
@@ -129,6 +129,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		b_break = findViewById(R.id.takeBreak);
 		b_continue = findViewById(R.id.continueTask);
 
+		animator = CustomAnimator.getInstance(pb_timer);
+
 		// Get the task and break lengths from the database
 		updateTimeFromSettings();
 
@@ -156,8 +158,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			if ( TimerService.hasFinishedInBackground()
 					|| (getIntent().getAction() != null && getIntent().getAction().equals("breakContinue"))) {
 				// Stop the animation
-				if ( pb_animation != null && pb_animation.isRunning()) {
-					pb_animation.cancel();
+				if ( animator.isRunning() ) {
+					animator.cancelAnimation();
 				}
 				// Set the progress to its maximum value
 				if ( pb_timer != null && pb_timer.getProgress() != pb_timer.getMax()) {
@@ -219,7 +221,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	public void onStartButtonClick(View view) {
 		if (!isTimerRunning) {
 			TimerService.setTaskDuration(taskLength);
-			startTask();
+			startTask(taskLength);
 			numOfConsecutiveTasks++;
 		}
 	}
@@ -235,11 +237,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	public void onPauseButtonClick(View view) {
 		if ( isTimerRunning ) {
 			TimerService.setIsPause(isPaused);
-			pb_animation.pause();
+			animator.pauseAnimation();
 			stopTimer();
 		} else {
 			TimerService.setIsPause(isPaused);
-			pb_animation.resume();
+			animator.resumeAnimation();
 			startTimer();
 		}
 
@@ -325,14 +327,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 	/* =========== Private methods =========== */
 	/**
-	 * Default start task method which overloads and calls the main startTask
-	 * method with the default settings.
-	 */
-	private void startTask() {
-		startTask(taskLength);
-	}
-
-	/**
 	 * This method is responsible for starting the timer and setting the correct
 	 * colours depending on whether it is a task or a break currently running. It
 	 * then sets an appropriate animation for the progress bar.
@@ -353,10 +347,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			showButtons();
 
 			// Start the progress bar pb_animation
-			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", 3600, 0);
-			pb_animation.setDuration(duration);
-			pb_animation.setInterpolator(new LinearInterpolator());
-			pb_animation.start();
+			animator.startAnimation(duration);
 
 			// If the edit text is active make it inactive to avoid distraction of the blinking cursor
 			if( et_taskName.hasFocus() ) {
@@ -385,11 +376,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		pb_timer.setProgress(progressToStartFrom);
 
 		if ( !isPaused ) {
+			// Set the progress bar view in case the app has been started with a running service and
+			// it needs to update the animation (in this case the new progress bar might be different)
+			animator.setProgressBar(pb_timer);
 			// Resumes the animation of the timer
-			pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", progressToStartFrom, 0);
-			pb_animation.setDuration(taskLength);
-			pb_animation.setInterpolator(new LinearInterpolator());
-			pb_animation.start();
+			animator.startAnimation(taskLength, progressToStartFrom);
 		}
 
 		// Shows the correct buttons
@@ -544,6 +535,9 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 * pomodoro.
 	 */
 	private void onTimerEnd() {
+		// Stop the animation
+		animator.cancelAnimation();
+
 		// Stop the timer
 		stopTimer();
 		showButtons();
@@ -570,10 +564,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 			restoreColors();
 		}
 
-		// Stop the animation if it is running
-		if ( pb_animation.isRunning() ) {
-			pb_animation.end();
-		}
 		// Animate the progressbar backwards to its beginning state
 		ObjectAnimator animation = ObjectAnimator.ofInt(pb_timer, "progress", 0, 3600);
 		animation.setDuration(500);
@@ -585,7 +575,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 	 */
 	private void startTimer() {
 		isTimerRunning = true;
-		startService(new Intent(getBaseContext(), TimerService.class).putExtra("time", totalSecondsLeft));
+		startService(new Intent(getBaseContext(), TimerService.class));
 	}
 
 	/**
