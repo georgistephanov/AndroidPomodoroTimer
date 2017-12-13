@@ -131,9 +131,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 		animator = CustomAnimator.getInstance(pb_timer);
 
-		// Get the task and break lengths from the database
-		updateTimeFromSettings();
-
 		// Register the broadcast listener
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				broadcastReceiver, new IntentFilter("TimeLeft")
@@ -146,6 +143,13 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 		isTimerRunning = TimerService.isRunning();
 
 		if ( isTimerRunning ) {
+			// Set the isPaused to false because if the timer is paused and the user presses the start button
+			// of the widget the animation freezes due to the fact that isPaused is not updated to false
+			isPaused = false;
+
+			taskLength = TimerService.getTaskDuration();
+			totalSecondsLeft = TimerService.getTimeLeft();
+
 			resumeTask();
 			settingsUpdatePending = true; // The settings are updated on every resume of the activity
 		} else if ( isPaused ) {

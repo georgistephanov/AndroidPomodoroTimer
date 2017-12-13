@@ -29,9 +29,7 @@ public class CustomAnimator {
 
 	void startAnimation(int duration, int startFrom) {
 		if (pb_animation.isRunning()) {
-			pb_animation.end();
 			pb_animation.cancel();
-			pb_animation = null;
 		}
 
 		pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", startFrom, 0);
@@ -53,6 +51,7 @@ public class CustomAnimator {
 			pb_animation.cancel();
 		}
 
+		// Restores the beginning state of the timer
 		pb_animation = ObjectAnimator.ofInt(pb_timer, "progress", 3600, 0);
 	}
 

@@ -64,6 +64,7 @@ public class TimerService extends Service {
 				Cursor cursor = Database.getSettings();
 
 				if (cursor.moveToNext()) {
+					// Get the total task duration from the database
 					taskDuration = cursor.getInt(0);
 				} else {
 					throw new RuntimeException("Could not get the settings from the database");
@@ -151,6 +152,14 @@ public class TimerService extends Service {
 	 */
 	static int getTimeLeft() {
 		return timeLeft;
+	}
+
+	/**
+	 * Returns the total duration of the task that is currently running
+	 * @return task duration
+	 */
+	static int getTaskDuration() {
+		return taskDuration;
 	}
 
 	/**
