@@ -1,28 +1,15 @@
 package com.georgistephanov.android.pomodorotimer;
 
-import android.app.ActivityManager;
-import android.app.IntentService;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-import android.widget.Toast;
-
 import java.util.Timer;
 import java.util.TimerTask;
-
-/**
- * Created by Georgi on 09-Dec-17.
- */
 
 public class TimerService extends Service {
 	private static TimerService serviceInstance = null;

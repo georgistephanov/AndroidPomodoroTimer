@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
@@ -14,14 +13,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
@@ -236,9 +232,6 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 			// If there is no work done prior set the top of the Y axis to an arbitrary value
 			if (yAxisMaxValue == 0) {
 				yAxisMaxValue = 60;
-			} else {
-				// Set the max Y axis value to a little bit more than the max value
-				//yAxisMaxValue += 10;
 			}
 
 			// Set the X axis max value depending on the period that is being displayed
@@ -282,11 +275,6 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 			numOfDays = 30;
 		} else {
 			throw new RuntimeException("No periods except week and month have been configured");
-		}
-
-		for (int i = 0; i < 4; i++) {
-			SliceValue sliceValues = new SliceValue((float) Math.random() * 30 + 15, ChartUtils.pickColor());
-
 		}
 
 		// Get the data from the database and populate the list of slice values

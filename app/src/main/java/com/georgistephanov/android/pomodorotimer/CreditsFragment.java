@@ -8,10 +8,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
 
-/**
- * Created by Georgi on 07-Dec-17.
- */
-
 public class CreditsFragment extends DialogFragment {
 	Context context;
 

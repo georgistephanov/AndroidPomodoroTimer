@@ -10,13 +10,9 @@ import android.media.MediaPlayer;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 
-/**
- * Created by Georgi on 07-Dec-17.
- */
-
 public class Notifications {
 	// Main notification channel id
-	private static final String MAIN_NOTIFICATION_CHANNEL = "PomodoroActivity";
+	private static final String MAIN_NOTIFICATION_CHANNEL = "SimplePomodoroTimer";
 
 	private Context context;
 
@@ -53,7 +49,6 @@ public class Notifications {
 		// Builds the notification
 		NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, MAIN_NOTIFICATION_CHANNEL);
 		notificationBuilder
-				.setAutoCancel(true)
 				.setAutoCancel(true)
 				.setSmallIcon(R.mipmap.ic_launcher_round);
 

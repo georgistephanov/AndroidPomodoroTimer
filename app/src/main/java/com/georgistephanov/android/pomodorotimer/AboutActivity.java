@@ -1,7 +1,6 @@
 package com.georgistephanov.android.pomodorotimer;
 
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.ListActivity;
 import android.content.Context;
 import android.os.Bundle;
@@ -19,10 +18,6 @@ import de.psdev.licensesdialog.licenses.CreativeCommonsAttribution30Unported;
 import de.psdev.licensesdialog.licenses.License;
 import de.psdev.licensesdialog.model.Notice;
 import de.psdev.licensesdialog.model.Notices;
-
-/**
- * Created by Georgi on 07-Dec-17.
- */
 
 public class AboutActivity extends ListActivity {
 	private static final String [] aboutNames = {
@@ -117,7 +112,7 @@ public class AboutActivity extends ListActivity {
 
 				// Set the label text and its visibility
 				TextView aboutLabel = row.findViewById(R.id.aboutLabel);
-				aboutLabel.setText(context.getResources().getString(R.string.plain_string, "1.0"));
+				aboutLabel.setText(context.getResources().getString(R.string.plain_string, aboutLabels[position]));
 				aboutLabel.setVisibility(View.VISIBLE);
 			}
 
