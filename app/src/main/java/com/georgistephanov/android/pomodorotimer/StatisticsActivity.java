@@ -46,8 +46,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	Period defaultPeriod = Period.WEEK;
-
-	int colourNumber = 0;
+	private int colourNumber = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +64,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		bulletListLayout = findViewById(R.id.bullet_list_layout);
 
 		// Set the default period
-		setPeriod(defaultPeriod);
+		generateData(defaultPeriod);
 
 		// Set the correct background colours depending on the theme
 		if (MainActivity.getThemeId(this) == R.style.DarkTheme) {
@@ -96,10 +95,6 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		}
 	}
 
-	public void setPeriod(Period period) {
-		generateData(period);
-	}
-
 	/**
 	 * Gets and displays the graph data for the previous amount of days.
 	 * @param period to generate data for
@@ -116,6 +111,12 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		makePieChart(period);
 	}
 
+	/**
+	 * This method reads the previously done tasks from the database and populates the line graph.
+	 * First, it creates the line of the graph from the data from the database. Then, it sets the
+	 * look of the line graph and feeds it the line.
+	 * @param period the period for which data is displayed
+	 */
 	private void makeLineGraph(Period period) {
 		// Set the number of days that is going to be displayed info for
 		int numOfDays;
@@ -240,11 +241,9 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 			if (period == Period.WEEK) {
 				// Show all 7 days on the graph
 				xAxisMaxValue = 6;
-			} else if (period == Period.MONTH) {
+			} else {
 				// Show maximum of 10 days at a time on the graph
 				xAxisMaxValue = 9;
-			} else {
-				throw new RuntimeException("No periods except week and month have been configured");
 			}
 
 			lineChartView.setMaximumViewport(
@@ -257,8 +256,9 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	/**
-	 * Gets the information needed for populating the pie chart graph and sets its attributes
-	 * and displays it.
+	 * This method creates and populates with data the pie chart. It queries the data needed for
+	 * the previous done tasks from the database and adds it to the pie chart. If no such data
+	 * exists, a default method for generating the pie chart is called.
 	 */
 	private void makePieChart(Period period) {
 		// Set the number of days that is going to be displayed info for
@@ -289,7 +289,6 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 
 				// Check if such entry exists (not matching the whitespace and/or casing)
 				// and if exists don't create another entry but rather just add the taskDuration to it
-				// This could be allowed as low amount of different tasks are expected exist in most cases
 				boolean entryFound = false;
 				if ( tasks.size() > 0 ) {
 					for (Map.Entry<String, Integer> e : tasks.entrySet()) {
@@ -325,15 +324,15 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 			}
 		}
 
-		PieChartData pieChartData = new PieChartData(sliceValues);
-		pieChartData.setHasLabels(true);
-		pieChartData.setHasLabelsOnlyForSelected(true);
-		pieChartData.setHasCenterCircle(true);
+		PieChartData pieChartData = new PieChartData(sliceValues)
+				.setHasLabels(true)
+				.setHasLabelsOnlyForSelected(true)
+				.setHasCenterCircle(true)
+				.setCenterText1FontSize((int) getResources().getDimension(R.dimen.pie_chart_textSize));
 
 		if (MainActivity.getThemeId(this) == R.style.DarkTheme) {
 			pieChartData.setCenterText1Color(getResources().getColor(R.color.lightGray, this.getTheme()));
 		}
-		pieChartData.setCenterText1FontSize((int) getResources().getDimension(R.dimen.pie_chart_textSize));
 
 		PieChartView pieChartView = findViewById(R.id.pieChart);
 		pieChartView.setPieChartData(pieChartData);
@@ -345,6 +344,10 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		populateBulletList(sliceValues);
 	}
 
+	/**
+	 * Generates the default pie chart. This method is used there are no task records in the
+	 * database and therefore the pie chart should be empty.
+	 */
 	private void makeDefaultPieChart() {
 		List<SliceValue> sliceValues = new ArrayList<>();
 
@@ -363,6 +366,12 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 		bulletListLayout.setVisibility(View.GONE);
 	}
 
+	/**
+	 * Populates the bullet list which is located under the pie chart. It uses the slice values of
+	 * the actual pie chart, as well as the same colors. The bullet list represents each task name
+	 * with the corresponding color of the pie chart
+	 * @param sliceValues list of the slice values of the pie chart
+	 */
 	private void populateBulletList(List<SliceValue> sliceValues) {
 		// Remove previous bullet points
 		bulletListLayout.removeAllViews();
@@ -428,7 +437,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	/**
-	 * Sets the correct values to the textviews which are located under the graph. They
+	 * Sets the correct values to the text views which are located under the graph. They
 	 * represent the total amount of timed worked for the period and the average time worked
 	 * each day of that period.
 	 * @param numOfDays the period
@@ -456,7 +465,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 
 	/**
 	 * Formats a timestamp to a day and month, which are used for the X axis of the Line graph.
-	 * @param timestamp to be formatted
+	 * @param timestamp of the day
 	 * @return day and month in the format dd/mm
 	 */
 	private String getXAxisDateLabel(long timestamp) {
@@ -468,7 +477,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 
 	/**
 	 * Formats a time from minutes to the format 1h 20m
-	 * @param minutes the minutes to format
+	 * @param minutes the amount of time to be formatted
 	 * @return the formatted time
 	 */
 	private String formatTime(int minutes) {
@@ -482,7 +491,7 @@ public class StatisticsActivity extends Activity implements PopupMenu.OnMenuItem
 	}
 
 	/**
-	 * Returns the next colour id for the pie chart
+	 * Returns the next colour id for the pie chart from the pieChart array with different colors
 	 * @return colour
 	 */
 	private int getNextColor() {
